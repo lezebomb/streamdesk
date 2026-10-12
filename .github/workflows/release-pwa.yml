@@ -1,0 +1,33 @@
+name: Build reviewable PWA release
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: '24'
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: node scripts/package.mjs
+      - shell: pwsh
+        run: |
+          $releaseVersion = (Get-Content package.json | ConvertFrom-Json).version
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$releaseVersion") { throw 'Tag/version mismatch' }
+          Compress-Archive -LiteralPath "artifacts/streamdesk-$releaseVersion" -DestinationPath "artifacts/streamdesk-$releaseVersion.zip"
+          (Get-FileHash -Algorithm SHA256 "artifacts/streamdesk-$releaseVersion.zip").Hash | Set-Content "artifacts/streamdesk-$releaseVersion.zip.sha256"
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: streamdesk-pwa-release
+          path: |
+            artifacts/*.zip
+            artifacts/*.sha256
+          retention-days: 14

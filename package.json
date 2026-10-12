@@ -15,7 +15,14 @@
     "bench:network": "node scripts/bench-network.mjs",
     "bench:playback": "node scripts/bench-playback.mjs",
     "test:e2e": "node scripts/e2e.mjs",
-    "report": "node scripts/report.mjs"
+    "report": "node scripts/report.mjs",
+    "test:smoke": "node scripts/ci-smoke.mjs",
+    "test:iteration": "node scripts/iteration-e2e.mjs",
+    "test:quality": "node scripts/quality.mjs",
+    "acceptance:search": "node scripts/acceptance-search.mjs",
+    "acceptance:playback": "node scripts/acceptance-playback.mjs",
+    "acceptance:soak": "node scripts/soak.mjs",
+    "package:pwa": "node scripts/package.mjs"
   },
   "dependencies": {
     "hls.js": "1.7.3"

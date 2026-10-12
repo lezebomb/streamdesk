@@ -6,6 +6,7 @@ const sources=JSON.parse(await fs.readFile('data/acceptance-sources.json','utf8'
 const works=JSON.parse(await fs.readFile('data/acceptance-works.json','utf8'));
 const runDir=process.env.RUN_DIR||'reports/runs/coverage-2026-10-12';await fs.mkdir(runDir,{recursive:true});
 const report={at:new Date().toISOString(),environment:{os:os.platform(),node:process.version,apiConcurrency:2,mediaConcurrency:1,timeoutMs:8000,segmentByteLimit:10*1024*1024},sources,works:[]};
+if(process.env.RESUME==='1')try{const previous=JSON.parse(await fs.readFile(`${runDir}/search-media.json`,'utf8'));report.works=previous.works;report.at=previous.at;report.resumedAt=new Date().toISOString()}catch{}
 const normalize=s=>s.toLowerCase().replace(/[\s\p{P}\p{S}]/gu,'');
 async function download(url,limit=2*1024*1024){const start=performance.now(),r=await fetch(url,{signal:AbortSignal.timeout(8000)}),headersAt=performance.now(),chunks=[];let bytes=0,truncated=false;
  if(r.ok)for await(const b of r.body){bytes+=b.byteLength;chunks.push(b);if(bytes>limit){truncated=true;break}}
@@ -28,6 +29,8 @@ async function media(url,kind,evidence){const requests=[];try{
  return {ok:seg.status<400&&seg.bytes>0,fault:seg.status>=400?'source_http':undefined,requests,segmentMbps:seg.bytes*8/seg.ms/1000};
  }catch(e){return {ok:false,fault:'network_or_source_unresolved',error:e.message,cause:e.cause?.code,requests}}}
 for(const [index,work]of works.entries()){
+ if(process.env.ONLY_TITLES&&!process.env.ONLY_TITLES.split(',').includes(work.title))continue;
+ if(report.works.some(w=>w.index===index+1))continue;
  const row={...work,index:index+1,search:[],attempts:[]};const progress=[];
  const rows=await searchAll(sources,work.title,AbortSignal.timeout(23000),r=>progress.push({sourceId:r.sourceId,ms:r.ms,ok:r.ok}));
  row.search=rows.map(r=>({...r,list:r.list.map(({episodes,groups,...f})=>f)}));row.completionOrder=progress;

@@ -2,6 +2,7 @@
   {"id":"open-hls","name":"公开影片 · HLS","type":"catalog","enabled":true,"catalog":"hls"},
   {"id":"open-backup","name":"公开影片 · 备用清单","type":"catalog","enabled":true,"catalog":"backup"},
   {"id":"open-blender","name":"Blender · 公开预告","type":"catalog","enabled":true,"catalog":"blender"},
+  {"id":"open-quality","name":"Apple · UHD 测试","type":"catalog","enabled":false,"catalog":"quality"},
   {"id":"open-mp4","name":"旧 MP4 · 实测 403","type":"catalog","enabled":false,"catalog":"mp4"},
   {"id":"baofeng","name":"暴风 · 部分新片可播","type":"applecms","enabled":true,"api":"https://bfzyapi.com/api.php/provide/vod/"},
   {"id":"guangsu","name":"光速 · 部分样本已可播","type":"applecms","enabled":true,"priority":10,"api":"https://api.guangsuapi.com/api.php/provide/vod/"},

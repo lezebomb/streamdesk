@@ -10,7 +10,7 @@ export function validateSources(sources){
  const ids=new Set();return sources.map(s=>{
   if(!s||!/^[a-z0-9_-]{1,40}$/i.test(s.id)||ids.has(s.id)||typeof s.name!=='string'||s.name.length>100||!['catalog','applecms','embed'].includes(s.type))throw new Error('来源配置无效或 ID 重复');ids.add(s.id);
   if(s.priority!==undefined&&(!Number.isFinite(s.priority)||s.priority< -10||s.priority>10))throw new Error('来源优先级必须在 -10 到 10 之间');
-  if(s.type==='catalog'&&!['hls','mp4','backup','blender'].includes(s.catalog))throw new Error('不支持的公开目录');
+  if(s.type==='catalog'&&!['hls','mp4','backup','blender','quality'].includes(s.catalog))throw new Error('不支持的公开目录');
   if(s.type==='applecms'){const u=new URL(s.api);if(!['https:','http:'].includes(u.protocol)||u.username||u.password)throw new Error('API 必须是公开 HTTP(S) 地址');}
   if(s.type==='embed'){if(!Array.isArray(s.items)||s.items.length>100)throw new Error('Embed items 必须是最多 100 个影片的数组');for(const f of s.items){if(typeof f.title!=='string'||!Array.isArray(f.episodes)||!f.id)throw new Error('Embed 影片格式错误');for(const e of f.episodes){const u=new URL(e.url);if(u.protocol!=='https:'||e.kind!=='embed'||!e.key||!e.label)throw new Error('Embed 只接受 HTTPS 页面地址');}}}
   return {...s,enabled:s.enabled===true};

@@ -1,0 +1,5 @@
+[
+ {"id":"open-hls","name":"公开 HLS","type":"catalog","enabled":true,"catalog":"hls"},
+ {"id":"open-backup","name":"公开备用","type":"catalog","enabled":true,"catalog":"backup"},
+ {"id":"open-quality","name":"Apple · UHD 测试","type":"catalog","enabled":true,"catalog":"quality"}
+]
