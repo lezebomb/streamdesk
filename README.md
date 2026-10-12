@@ -1,4 +1,11 @@
-# StreamDesk 0.2.0
+# StreamDesk 0.3.0
+
+0.3.0 基于 0.2.0，集中扩展红牛/速播备用媒体、真实分片检查与可完全关闭的 WebGL2 空间增强。保留 hls.js、LibreTV 恢复核心、ABR、选集/进度和收藏历史，不重做页面布局。实际可播范围和长时故障见 [本轮性能报告](reports/performance.md)，算法取舍见 [增强调查](reports/enhancement-research.md)。旧来源配置可在来源管理点击“添加本轮验证的备用来源”，原配置不被覆盖。
+
+增强默认关闭，可选轻量、均衡、动漫空间滤镜与实验性自动策略。它不是 RTX VSR、Anime4K CNN 或原生 4K；显示的原生分辨率仍来自解码器。预算、已知 HDR、GPU/CORS 不满足时回退原画；原生视频全屏、PiP 和原生字幕显示时也保持原画。“增强全屏”使用包含画布的播放器区域，底部 52 px 留给原生控制栏。
+
+华为 Mate 60 / 4.2.0.220 已通过真实 HLS、增强开关与快进实测。手机 PWA 使用电脑 Node 后端，通过 ADB 转发访问；这不等同于独立 Android 客户端。手机测试不安装 APK，不清数据，不更改系统设置。
+
 
 在 0.1.0 上迭代，保留 hls.js / LibreTV 恢复核心与原页面布局。新增 Apple CMS 全播放分组、渐进式搜索、同年同季同半集匹配、实际清晰度与帧率、平滑手动档位切换、设备/网络缓冲策略和可迁移收藏历史。
 
@@ -87,7 +94,7 @@ node server/index.mjs
 
 ## Android 使用
 
-本次交付是 PWA，**没有 APK，没有 Android 真机测试**。已验证 390×844 的手机布局。
+本次交付是 PWA，没有 APK。已在华为 Mate 60 / 4.2.0.220、Huawei Browser 17.0.8.310 上验证真实 HLS、增强开关与快进。测试通过 USB/ADB 连接电脑后端；不能等同于独立 Android 应用。
 
 Android Chrome 安装 PWA 需要安全来源。USB 调试环境可用 ADB 将手机的 localhost 转发到电脑：
 

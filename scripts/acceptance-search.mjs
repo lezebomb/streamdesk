@@ -2,8 +2,8 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import {adapters,searchAll} from '../server/adapters.mjs';
 import {playbackGroups} from '../shared/cms.ts';
-const sources=JSON.parse(await fs.readFile('data/acceptance-sources.json','utf8'));
-const works=JSON.parse(await fs.readFile('data/acceptance-works.json','utf8'));
+const sources=JSON.parse(await fs.readFile(process.env.TEST_SOURCES||'data/acceptance-sources.json','utf8'));
+const works=JSON.parse(await fs.readFile(process.env.TEST_WORKS||'data/acceptance-works.json','utf8'));
 const runDir=process.env.RUN_DIR||'reports/runs/coverage-2026-10-12';await fs.mkdir(runDir,{recursive:true});
 const report={at:new Date().toISOString(),environment:{os:os.platform(),node:process.version,apiConcurrency:2,mediaConcurrency:1,timeoutMs:8000,segmentByteLimit:10*1024*1024},sources,works:[]};
 if(process.env.RESUME==='1')try{const previous=JSON.parse(await fs.readFile(`${runDir}/search-media.json`,'utf8'));report.works=previous.works;report.at=previous.at;report.resumedAt=new Date().toISOString()}catch{}

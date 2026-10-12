@@ -1,19 +1,20 @@
 import Hls from 'hls.js';
+import {VideoEnhancement} from './enhancement';
 import {PlaybackRecovery} from './vendor/playback-recovery';
 import type {Episode,Metrics} from '../shared/model';
 import {playbackPolicy,type DeviceNetwork} from '../shared/playback-policy';
 export const freshMetrics=():Metrics=>({firstFrameMs:null,stallMs:0,stalls:0,watchMs:0,seekMs:[],fragments:[],errors:[],switches:0,frames:0,droppedFrames:0});
 export class Player {
- video:HTMLVideoElement;hls:Hls|null=null;metrics=freshMetrics();episode:Episode|null=null;private lastPosition=0;
+ video:HTMLVideoElement;enhancement:VideoEnhancement;hls:Hls|null=null;metrics=freshMetrics();episode:Episode|null=null;private lastPosition=0;
  manualLevel=-1;policy=playbackPolicy();private fps:number|null=null;private fpsAnchor:{frames:number;mediaTime:number}|null=null;private generation=0;
- private needsUserPlay=false;
+ contentAnime=false;private needsUserPlay=false;
  private parsedVideoCodec:string|null=null;
  capabilities:{height:number;codec:string;supported:boolean;smooth:boolean;powerEfficient:boolean}[]=[];
  private recovery=new PlaybackRecovery({maxNetworkRetries:2,maxMediaRecoveries:1});
  private cleanups:(()=>void)[]=[];private started=0;private lastTick=0;private stallAt=0;private seekAt=0;private pendingSeek=false;private settled=false;private watchdog:ReturnType<typeof setInterval>|null=null;private frameId=0;private decoderRecovered=false;
- constructor(video:HTMLVideoElement,private status:(s:string)=>void,private fail:(reason:string)=>void,private update:(m:Metrics)=>void){this.video=video}
+ constructor(video:HTMLVideoElement,private status:(s:string)=>void,private fail:(reason:string)=>void,private update:(m:Metrics)=>void){this.video=video;this.enhancement=new VideoEnhancement(video)}
  stop(){
-  this.settled=true;++this.generation;if(this.watchdog)clearInterval(this.watchdog);this.watchdog=null;
+  this.enhancement.reset();this.settled=true;++this.generation;if(this.watchdog)clearInterval(this.watchdog);this.watchdog=null;
   this.recovery.dispose();for(const cleanup of this.cleanups)cleanup();this.cleanups=[];
   if(this.frameId)this.video.cancelVideoFrameCallback(this.frameId);
   this.hls?.destroy();this.hls=null;this.manualLevel=-1;this.capabilities=[];this.fps=null;this.fpsAnchor=null;this.parsedVideoCodec=null;this.video.pause();this.video.removeAttribute('src');this.video.load();
@@ -40,7 +41,7 @@ export class Player {
    if(this.seekAt&&!v.seeking&&!this.pendingSeek){this.metrics.seekMs.push(now-this.seekAt);this.seekAt=0;this.status('播放中')}
    if(!this.fpsAnchor)this.fpsAnchor={frames:meta.presentedFrames,mediaTime:meta.mediaTime};
    else if(meta.mediaTime-this.fpsAnchor.mediaTime>=1){const elapsed=meta.mediaTime-this.fpsAnchor.mediaTime;this.fps=(meta.presentedFrames-this.fpsAnchor.frames)/elapsed;this.fpsAnchor={frames:meta.presentedFrames,mediaTime:meta.mediaTime}}
-   this.metrics.frames++;this.frameId=v.requestVideoFrameCallback(frame);
+   this.metrics.frames++;this.enhancement.frame(now,meta,this.contentAnime,this.hls?.levels[this.hls.currentLevel]?.attrs['VIDEO-RANGE']==='PQ'||this.hls?.levels[this.hls.currentLevel]?.attrs['VIDEO-RANGE']==='HLG',this.started,this.fps||30);this.frameId=v.requestVideoFrameCallback(frame);
   };
   if('requestVideoFrameCallback'in v)this.frameId=v.requestVideoFrameCallback(frame);
   else on('loadeddata',()=>{if(this.metrics.firstFrameMs===null)this.metrics.firstFrameMs=performance.now()-this.started});
@@ -93,7 +94,7 @@ export class Player {
  bufferSeconds(){const v=this.video;for(let i=0;i<v.buffered.length;i++)if(v.buffered.start(i)<=v.currentTime&&v.buffered.end(i)>v.currentTime)return v.buffered.end(i)-v.currentTime;return 0}
  qualityLevels(){return this.hls?.levels.map((l,i)=>{const single=this.hls!.levels.length===1,height=l.height||(single?this.video.videoHeight:0),width=l.width||(single?this.video.videoWidth:0),codec=l.videoCodec||(single?this.parsedVideoCodec:null);return {i,width,height,bitrate:l.bitrate||null,codec,frameRate:l.attrs['FRAME-RATE']?Number(l.attrs['FRAME-RATE']):null,label:`${height||'?'}p${height>=2160?' / 4K':''} · ${l.bitrate?(l.bitrate/1e6).toFixed(1)+' Mbps':'清单未标注码率'}${codec?' · '+codec:''}`}})||[]}
  setQuality(level:number){if(!this.hls||!Number.isInteger(level)||level< -1||level>=this.hls.levels.length)return;this.manualLevel=level;this.hls.capLevelToPlayerSize=level===-1;this.hls.nextLevel=level}
- qualityState(){const l=this.hls?.levels[this.hls.currentLevel];return {width:this.video.videoWidth,height:this.video.videoHeight,presentedFps:this.fps,declaredFps:l?.attrs['FRAME-RATE']?Number(l.attrs['FRAME-RATE']):null,codec:l?.videoCodec||this.parsedVideoCodec||null,sourceBufferCodec:this.parsedVideoCodec,manifestBitrate:l?.bitrate||null,segmentMediaMbps:this.metrics.fragments.slice().reverse().find(f=>f.stream==='main'&&f.level===this.hls?.currentLevel)?.mediaMbps??null,bandwidthEstimate:this.hls?.bandwidthEstimate??null,currentLevel:this.hls?.currentLevel??null,manualLevel:this.manualLevel,policy:this.policy,capabilities:this.capabilities,hardwareDecoder:'Web API 无法确定实际硬件解码器'} }
+ qualityState(){const l=this.hls?.levels[this.hls.currentLevel];return {width:this.video.videoWidth,height:this.video.videoHeight,presentedFps:this.fps,declaredFps:l?.attrs['FRAME-RATE']?Number(l.attrs['FRAME-RATE']):null,codec:l?.videoCodec||this.parsedVideoCodec||null,sourceBufferCodec:this.parsedVideoCodec,manifestBitrate:l?.bitrate||null,segmentMediaMbps:this.metrics.fragments.slice().reverse().find(f=>f.stream==='main'&&f.level===this.hls?.currentLevel)?.mediaMbps??null,bandwidthEstimate:this.hls?.bandwidthEstimate??null,currentLevel:this.hls?.currentLevel??null,manualLevel:this.manualLevel,policy:this.policy,capabilities:this.capabilities,enhancement:this.enhancement.snapshot(),hardwareDecoder:'Web API 无法确定实际硬件解码器'} }
  private async probeCapabilities(){const generation=this.generation;this.capabilities=[];if(!navigator.mediaCapabilities)return;for(const l of this.hls?.levels||[]){if(!l.videoCodec||!l.width||!l.height)continue;try{const info=await navigator.mediaCapabilities.decodingInfo({type:'media-source',video:{contentType:`video/mp4; codecs="${l.videoCodec}"`,width:l.width,height:l.height,bitrate:l.bitrate,framerate:Number(l.attrs['FRAME-RATE'])||30}});if(generation!==this.generation)return;this.capabilities.push({height:l.height,codec:l.videoCodec,supported:info.supported,smooth:info.smooth,powerEfficient:info.powerEfficient})}catch{/* Unknown capability is never advertised as hardware support. */}}}
  resumePosition(){return this.video.readyState>=2&&Number.isFinite(this.video.currentTime)?this.video.currentTime:this.lastPosition}
 }

@@ -17,7 +17,7 @@ const server=http.createServer(async(req,res)=>{
  if(url.pathname.startsWith('/api/')){
   const start=performance.now(),controller=new AbortController();req.on('aborted',()=>controller.abort());res.on('close',()=>{if(!res.writableEnded)controller.abort()});
   const sources=await readSources();
-  if(req.method==='GET'&&url.pathname==='/api/sources'){send(res,200,{sources});return}
+  if(req.method==='GET'&&url.pathname==='/api/sources'){const presets=validateSources(JSON.parse(await fs.readFile('data/sources.example.json','utf8')));send(res,200,{sources,presets});return}
   if(req.method==='PUT'&&url.pathname==='/api/sources'){
    const next=validateSources((await body(req)).sources);for(const s of next)if(s.type==='applecms')await publicTarget(s.api);
    await fs.writeFile('data/sources.json.tmp',JSON.stringify(next,null,2));await fs.rename('data/sources.json.tmp','data/sources.json');send(res,200,{sources:next});return;

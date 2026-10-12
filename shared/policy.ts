@@ -2,10 +2,10 @@ import type {Episode,Film,Health} from './model';
 import {seasonOf} from './cms.ts';
 export function blankHealth():Health{return {apiSamples:0,apiFailures:0,apiMs:null,playSamples:0,playFailures:0,startupMs:null,mbps:null,stallMs:0,watchMs:0,cooldownUntil:0,failStreak:0,updatedAt:0}}
 const ema=(old:number|null,n:number)=>old===null?n:old*.7+n*.3;
-export function observe(h:Health,event:{kind:'api'|'play';ok:boolean;ms?:number;mbps?:number;stallMs?:number;watchMs?:number},now=Date.now()):Health{
+export function observe(h:Health,event:{kind:'api'|'play';ok:boolean;ms?:number;mbps?:number;stallMs?:number;watchMs?:number;height?:number},now=Date.now()):Health{
  const n={...h,updatedAt:now};
  if(event.kind==='api'){n.apiSamples++;if(!event.ok)n.apiFailures++;if(event.ms!==undefined)n.apiMs=ema(n.apiMs,event.ms)}
- else {n.playSamples++;if(!event.ok)n.playFailures++;if(event.ms!==undefined)n.startupMs=ema(n.startupMs,event.ms);if(event.mbps!==undefined)n.mbps=ema(n.mbps,event.mbps);n.stallMs+=event.stallMs||0;n.watchMs+=event.watchMs||0;}
+ else {n.playSamples++;if(!event.ok)n.playFailures++;if(event.ms!==undefined)n.startupMs=ema(n.startupMs,event.ms);if(event.mbps!==undefined)n.mbps=ema(n.mbps,event.mbps);n.stallMs+=event.stallMs||0;n.watchMs+=event.watchMs||0;if(event.ok&&event.height&&event.watchMs&&event.watchMs>=10000)n.height=event.height;}
  // API and media failures stay separate; successful API calls cannot clear a media cooldown.
  if(event.kind==='play'){n.failStreak=event.ok?0:n.failStreak+1;if(event.ok)n.cooldownUntil=0;else if(n.failStreak>=2)n.cooldownUntil=now+Math.min(300000,30000*2**(n.failStreak-2));}
  return n;

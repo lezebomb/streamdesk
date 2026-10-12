@@ -5,9 +5,9 @@ const runDir=process.env.RUN_DIR||'reports/runs/coverage-2026-10-12';const watch
 let report={at:new Date().toISOString(),environment:{os:os.platform(),node:process.version,url:base,concurrency:1,watchSeconds,startupTimeoutMs:31000,seekTimeoutMs:21000,failover:false,serviceWorkers:'block',unreachablePolicy:'Do not repeatedly request media after preflight HTTP failure'},cases:[]};
 if(process.env.RESUME==='1')try{report=JSON.parse(await fs.readFile(`${runDir}/playback.json`,'utf8'));report.resumedAt=new Date().toISOString();report.environment.unreachablePolicy='Do not repeatedly request media after preflight HTTP failure'}catch{}
 await fs.mkdir(runDir,{recursive:true});const browser=await launchBrowser();report.environment.browser=browser.version();
-const workCount=JSON.parse(await fs.readFile('data/acceptance-works.json','utf8')).length;
+const works=JSON.parse(await fs.readFile(process.env.TEST_WORKS||'data/acceptance-works.json','utf8')),workCount=works.length;
 try{for(let index=1;index<=workCount;index++){
- if(process.env.ONLY_TITLES&&!process.env.ONLY_TITLES.split(',').includes(JSON.parse(await fs.readFile('data/acceptance-works.json','utf8'))[index-1].title))continue;
+ if(process.env.ONLY_TITLES&&!process.env.ONLY_TITLES.split(',').includes(works[index-1].title))continue;
  let row;for(;;){try{row=JSON.parse(await fs.readFile(`${runDir}/work-${index}.json`,'utf8'));break}catch{await new Promise(r=>setTimeout(r,2000))}}
  if(!row.attempts.length){if(!report.cases.some(c=>c.index===index))report.cases.push({index,title:row.title,success:false,fault:'no_exact_metadata',attemptedPlayback:false});await fs.writeFile(`${runDir}/playback.json`,JSON.stringify(report,null,2));continue}
  for(const attempt of row.attempts)for(const [groupIndex,group]of attempt.groups.entries()){

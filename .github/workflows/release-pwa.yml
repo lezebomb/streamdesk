@@ -17,6 +17,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - run: npm run test:package
       - run: node scripts/package.mjs
       - shell: pwsh
         run: |

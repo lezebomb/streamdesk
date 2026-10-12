@@ -25,6 +25,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - run: npm run test:package
       - uses: actions/upload-artifact@v7.0.2
         with:
           name: streamdesk-pwa-${{ runner.os }}
@@ -42,6 +43,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run build
+      - run: npm run test:package
       - run: node scripts/ci-smoke.mjs
       - uses: actions/upload-artifact@v7.0.2
         if: always()

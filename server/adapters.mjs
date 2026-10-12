@@ -25,7 +25,7 @@ function blocked(ip){
 // This machine's VPN returns paired 198.18/15 + fdfe:dcba:9876 virtual DNS addresses.
 // Exception is limited to these verified provider hostnames, these exact virtual ranges,
 // and configured API calls. Other private hosts/IPs and all redirects remain blocked.
-const proxyDnsHosts=new Set(['bfzyapi.com','cj.lziapi.com','api.ffzyapi.com','api.guangsuapi.com','api.wujinapi.me']);
+const proxyDnsHosts=new Set(['bfzyapi.com','cj.lziapi.com','api.ffzyapi.com','api.guangsuapi.com','api.wujinapi.me','www.hongniuzy2.com','subocj.com']);
 function permittedVirtual(host,ip){return proxyDnsHosts.has(host)&&(/^(198\.1[89]\.)/.test(ip)||/^fdfe:dcba:9876:/i.test(ip));}
 export async function publicTarget(url){const u=new URL(url);if(!['https:','http:'].includes(u.protocol)||u.username||u.password)throw new Error('只接受公开 HTTP(S)');let timer;const answers=await Promise.race([dns.lookup(u.hostname.replace(/^\[|\]$/g,''),{all:true}),new Promise((_,reject)=>timer=setTimeout(()=>reject(new Error('DNS 超时')),3000))]).finally(()=>clearTimeout(timer));if(!answers.length||answers.some(a=>blocked(a.address)&&!permittedVirtual(u.hostname,a.address)))throw new Error('不允许请求内网或保留地址');return u;}
 // Only requests to administrator-configured API origins, no arbitrary proxy or rewritten headers.

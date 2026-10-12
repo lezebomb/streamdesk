@@ -1,0 +1,18 @@
+[
+  {
+    "id": "hongniu",
+    "name": "红牛（待实测）",
+    "type": "applecms",
+    "enabled": true,
+    "api": "https://www.hongniuzy2.com/api.php/provide/vod/from/hnm3u8/at/josn/",
+    "documentation": "https://hongniuzy.com/index.php/help"
+  },
+  {
+    "id": "subo",
+    "name": "速播（待实测）",
+    "type": "applecms",
+    "enabled": true,
+    "api": "https://subocj.com/api.php/provide/vod/at/json",
+    "documentation": "https://suboziyuan.com/index.php/help/index.html"
+  }
+]

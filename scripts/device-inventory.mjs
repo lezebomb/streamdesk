@@ -1,0 +1,6 @@
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import {launchBrowser} from './browser.mjs';
+const browser=await launchBrowser();try{const session=await browser.newBrowserCDPSession(),system=await session.send('SystemInfo.getInfo'),page=await browser.newPage();await page.goto(process.env.APP_URL||'http://127.0.0.1:4183',{waitUntil:'load'});
+const web=await page.evaluate(()=>{const gl=document.createElement('canvas').getContext('webgl2'),d=gl?.getExtension('WEBGL_debug_renderer_info');return {userAgent:navigator.userAgent,memoryGB:navigator.deviceMemory,cores:navigator.hardwareConcurrency,webgl2:!!gl,renderer:d?gl.getParameter(d.UNMASKED_RENDERER_WEBGL):null,webgpu:'gpu'in navigator,videoFrameCallback:'requestVideoFrameCallback'in HTMLVideoElement.prototype}});
+await fs.mkdir('reports/evidence',{recursive:true});const report={at:new Date().toISOString(),os:os.type(),release:os.release(),cpu:os.cpus()[0]?.model,logicalCPUs:os.cpus().length,memoryGB:os.totalmem()/2**30,browser:browser.version(),gpu:system.gpu,processes:(await session.send('SystemInfo.getProcessInfo')).processInfo,web};await fs.writeFile('reports/evidence/device-inventory.json',JSON.stringify(report,null,2));console.log(JSON.stringify({cpu:report.cpu,browser:report.browser,web,gpus:system.gpu.devices}));}finally{await browser.close()}
