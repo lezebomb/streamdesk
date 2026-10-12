@@ -1,0 +1,29 @@
+{
+  "name": "streamdesk-personal",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-or-later",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "node server/index.mjs --dev",
+    "start": "node server/index.mjs",
+    "build": "tsc --noEmit && vite build && node scripts/finalize-build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "bench:network": "node scripts/bench-network.mjs",
+    "bench:playback": "node scripts/bench-playback.mjs",
+    "test:e2e": "node scripts/e2e.mjs",
+    "report": "node scripts/report.mjs"
+  },
+  "dependencies": {
+    "hls.js": "1.7.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@types/node": "26.6.5",
+    "typescript": "7.0.2",
+    "vite": "8.3.4"
+  }
+}

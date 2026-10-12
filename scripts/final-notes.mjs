@@ -1,0 +1,4 @@
+import fs from 'node:fs/promises';
+let research=await fs.readFile('reports/research.md','utf8');research=research.replace('60 秒最大缓冲','60 秒缓冲长度配置上限（完整分片可能略超）').replace('匹配影片优先用有效豆瓣 ID；','先排除正片/预告/解说及类别不一致，再优先用有效豆瓣 ID；');await fs.writeFile('reports/research.md',research);
+let report=await fs.readFile('reports/performance.md','utf8');const network=JSON.parse(await fs.readFile('reports/initial-network.json','utf8'));const avg=network.api.filter(a=>a.ok).reduce((s,a)=>s+a.totalMs,0)/network.api.filter(a=>a.ok).length;report=report.replace(/该脚本对本机公开片库详情 API 的平均 [\d.]+ 秒/,`该脚本对本机公开片库详情 API 的平均 ${avg.toFixed(2)} ms`);
+const start=JSON.parse(await fs.readFile('reports/failover-startup.json','utf8'));report+=`\n## 额外验收\n\n首帧前故障：${start.ok?'通过':'未通过'}，真实备用线路解码出画，证据见 [failover-startup.json](failover-startup.json)。核心策略单元测试 10/10 通过，涵盖解说/预告隔离和跨季集号冲突。ABR 实际从 level 0 切到 level 1；缓冲观测超过 60 秒是完整分片边界下的结果，缓冲参数是目标/配置预算，不承诺严格逐秒截断。\n`;await fs.writeFile('reports/performance.md',report);

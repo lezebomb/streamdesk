@@ -1,0 +1,2 @@
+import fs from 'node:fs/promises';
+const docs=[];for(const url of ['https://lzizy.net','https://ffzy5.tv/help/']){try{const r=await fetch(url,{signal:AbortSignal.timeout(10000)}),body=await r.text();docs.push({url,status:r.status,body});console.log({url,status:r.status,links:[...body.matchAll(/(?:href=["']|https?:\/\/)([^\s"'<>]+)/g)].map(m=>m[0]).filter(s=>/help|api\.php|lziapi|ffzyapi/.test(s)).slice(0,12)})}catch(e){docs.push({url,error:e.message})}}await fs.writeFile('research/provider-docs.json',JSON.stringify(docs,null,2));

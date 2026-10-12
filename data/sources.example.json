@@ -1,0 +1,10 @@
+[
+  {"id":"open-hls","name":"公开影片 · HLS","type":"catalog","enabled":true,"catalog":"hls"},
+  {"id":"open-backup","name":"公开影片 · 备用清单","type":"catalog","enabled":true,"catalog":"backup"},
+  {"id":"open-blender","name":"Blender · 公开预告","type":"catalog","enabled":true,"catalog":"blender"},
+  {"id":"open-mp4","name":"旧 MP4 · 实测 403","type":"catalog","enabled":false,"catalog":"mp4"},
+  {"id":"baofeng","name":"暴风 · 部分新片可播","type":"applecms","enabled":true,"api":"https://bfzyapi.com/api.php/provide/vod/"},
+  {"id":"liangzi","name":"量子 · 样本媒体 404","type":"applecms","enabled":false,"api":"https://cj.lziapi.com/api.php/provide/vod/"},
+  {"id":"feifan","name":"非凡 · 样本媒体 403","type":"applecms","enabled":false,"api":"http://api.ffzyapi.com/api.php/provide/vod/"},
+  {"id":"framextv","name":"FrameXTV · Embed 待验证","type":"embed","enabled":false,"items":[]}
+]

@@ -1,0 +1,80 @@
+{
+  "at": "2026-10-12T06:32:09.233Z",
+  "browser": "154.0.8037.99",
+  "checks": [
+    {
+      "name": "UI and multi-source search",
+      "ok": true,
+      "evidence": {
+        "cards": 3
+      }
+    },
+    {
+      "name": "Real frame decoded",
+      "ok": true,
+      "evidence": {
+        "firstFrameMs": 3516.7999997138977
+      }
+    },
+    {
+      "name": "Manual line switch retains episode and progress",
+      "ok": true,
+      "evidence": {
+        "before": {
+          "position": 37.040994,
+          "key": "feature",
+          "source": "open-hls"
+        },
+        "after": {
+          "position": 37.064539,
+          "key": "feature",
+          "source": "open-backup"
+        }
+      }
+    },
+    {
+      "name": "Favorites and history survive reload",
+      "ok": true,
+      "evidence": {
+        "position": 37.389506
+      }
+    },
+    {
+      "name": "Automatic failover on injected HTTP 404",
+      "ok": true,
+      "evidence": {
+        "fault": "synthetic master-playlist 404; actual backup playback",
+        "before": 37.661263,
+        "after": {
+          "source": "open-backup",
+          "key": "feature",
+          "position": 37.661263
+        }
+      }
+    },
+    {
+      "name": "Mobile viewport has no horizontal overflow",
+      "ok": true,
+      "evidence": {
+        "content": 390,
+        "viewport": 390
+      }
+    },
+    {
+      "name": "PWA offline shell",
+      "ok": true,
+      "evidence": {
+        "brand": "▷StreamDesk个人影院",
+        "mediaOffline": false
+      }
+    },
+    {
+      "name": "No unhandled browser errors",
+      "ok": true,
+      "evidence": {
+        "errors": []
+      }
+    }
+  ],
+  "errors": []
+}

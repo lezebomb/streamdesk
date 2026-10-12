@@ -1,0 +1,30 @@
+import fs from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import {launchBrowser,base} from './browser.mjs';
+const browser=await launchBrowser(),checks=[],errors=[],at=new Date().toISOString();
+const check=(name,evidence)=>{checks.push({name,ok:true,evidence});console.log(name,JSON.stringify(evidence))};
+try{
+ const context=await browser.newContext({viewport:{width:1440,height:1000},serviceWorkers:'block'}),page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(base,{waitUntil:'networkidle'});await page.waitForFunction(()=>document.querySelectorAll('.film-card').length>=3);await page.screenshot({path:'reports/desktop.png',fullPage:true});check('UI and multi-source search',{cards:await page.locator('.film-card').count()});
+ await page.locator('#query').fill('Big Buck Bunny');await page.locator('#search-form').press('Enter');await page.waitForFunction(()=>document.querySelector('#results-heading').textContent.includes('Big Buck Bunny'));
+ await page.locator('.film-card').first().click();await page.waitForFunction(()=>window.streamdesk.metrics.firstFrameMs!==null,{},{timeout:22000});await page.waitForFunction(()=>window.streamdesk.candidates.length>=2);
+ check('Real frame decoded',{firstFrameMs:await page.evaluate(()=>window.streamdesk.metrics.firstFrameMs)});
+ await page.locator('#favorite').click();assert.match(await page.locator('#favorite').textContent(),/已收藏/);
+ await page.evaluate(()=>{document.querySelector('video').currentTime=36});await page.waitForFunction(()=>document.querySelector('video').currentTime>=36&&window.streamdesk.metrics.seekMs.length>0);await page.waitForTimeout(1100);
+ const before=await page.evaluate(()=>({position:document.querySelector('video').currentTime,key:window.streamdesk.episode.key,source:window.streamdesk.current.sourceId}));
+ await page.locator('[data-line]').filter({hasText:'备用清单'}).click();await page.waitForFunction(()=>window.streamdesk.current.sourceId==='open-backup'&&document.querySelector('video').currentTime>=36&&window.streamdesk.metrics.firstFrameMs!==null,{},{timeout:22000});
+ const after=await page.evaluate(()=>({position:document.querySelector('video').currentTime,key:window.streamdesk.episode.key,source:window.streamdesk.current.sourceId}));assert.equal(after.key,before.key);assert.ok(after.position>=before.position-1);check('Manual line switch retains episode and progress',{before,after});
+ await page.screenshot({path:'reports/player.png',fullPage:true});
+ await page.locator('#close-watch').click();await page.reload({waitUntil:'networkidle'});await page.locator('[data-view="favorites"]').click();assert.equal(await page.locator('#library .film-card').count(),1);await page.locator('#library .film-card').click();await page.waitForFunction(()=>window.streamdesk.metrics.firstFrameMs!==null&&document.querySelector('video').currentTime>=36,{},{timeout:22000});check('Favorites and history survive reload',{position:await page.evaluate(()=>document.querySelector('video').currentTime)});
+ await page.locator('#close-watch').click();await page.locator('[data-view="discover"]').click();await page.locator('#results .film-card').first().click();await page.waitForFunction(()=>window.streamdesk.metrics.firstFrameMs!==null&&window.streamdesk.candidates.length>=2,{},{timeout:22000});
+ await page.locator('[data-line]').filter({hasText:'公开影片 · HLS'}).click();await page.waitForFunction(()=>window.streamdesk.current.sourceId==='open-hls'&&window.streamdesk.metrics.firstFrameMs!==null,{},{timeout:22000});
+ const pos=await page.evaluate(()=>document.querySelector('video').currentTime);
+ await page.route('**/x36xhzz/x36xhzz.m3u8',route=>route.fulfill({status:404,contentType:'text/plain',body:'controlled e2e fault'}));
+ await page.evaluate(()=>{const h=window.streamdesk.player.hls;h.loadSource('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8');h.startLoad(document.querySelector('video').currentTime)});
+ await page.waitForFunction(()=>window.streamdesk.current.sourceId==='open-backup'&&window.streamdesk.metrics.firstFrameMs!==null,{},{timeout:22000});
+ const autoResult=await page.evaluate(()=>({source:window.streamdesk.current.sourceId,key:window.streamdesk.episode.key,position:document.querySelector('video').currentTime}));assert.ok(autoResult.position>=pos-1);check('Automatic failover on injected HTTP 404',{fault:'synthetic master-playlist 404; actual backup playback',before:pos,after:autoResult});await page.unroute('**/x36xhzz/x36xhzz.m3u8');
+ await context.close();
+ const mobileContext=await browser.newContext({viewport:{width:390,height:844},isMobile:true,deviceScaleFactor:1,serviceWorkers:'block'}),mobile=await mobileContext.newPage();await mobile.goto(base,{waitUntil:'networkidle'});await mobile.screenshot({path:'reports/mobile.png',fullPage:true});const width=await mobile.evaluate(()=>({content:document.documentElement.scrollWidth,viewport:innerWidth}));assert.ok(width.content<=width.viewport);check('Mobile viewport has no horizontal overflow',width);await mobileContext.close();
+ const offlineContext=await browser.newContext(),offline=await offlineContext.newPage();await offline.goto(base,{waitUntil:'networkidle'});await offline.evaluate(()=>navigator.serviceWorker.ready);await offline.reload({waitUntil:'networkidle'});await offlineContext.setOffline(true);await offline.reload({waitUntil:'domcontentloaded'});await offline.waitForSelector('.brand');check('PWA offline shell',{brand:await offline.locator('.brand').textContent(),mediaOffline:false});await offlineContext.close();
+ assert.deepEqual(errors,[]);check('No unhandled browser errors',{errors});
+}catch(e){checks.push({name:'acceptance failure',ok:false,error:e.stack});console.error(e.stack);process.exitCode=1}finally{await fs.writeFile('reports/acceptance.json',JSON.stringify({at,browser:browser.version(),checks,errors},null,2));await browser.close()}

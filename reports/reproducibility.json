@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-12T06:36:46.702Z",
+  "hashes": {
+    "package.json": "1bb9cca0eddc6eb3ce776d358dedf69cb278f0a423c710b6eee09c7af0703211",
+    "package-lock.json": "2803f1249aeeb0288d7c1768fab49507bb65dfdfdf3a7535eece6c188aa42191",
+    "src/vendor/cms-parser.ts": "c7d8c39ec599b1606fac4c40716c9cf449ee80c6663b1b737edf588776578667",
+    "src/vendor/playback-recovery.ts": "6666c35ffa1f53ca4b9c53537e0fbbd070ac9ba94a07791d3a9f6601a56ed3ed",
+    "src/player.ts": "b80975b05b8c48ec1a4b7820c306abd30a16e7993abd572b571fcc9d065cb581",
+    "server/adapters.mjs": "213dbccb28d4b589ee0e014a5b9e992a229445b4c5929c76998f942638bd8d5c",
+    "dist/index.html": "dd033d361e9fa4142c88f2314abb70a0ce0e64339975bbd5cbff45c3841f2048",
+    "dist/sw.js": "53360c9d8a6c404ac86cdd5bbffc0e40df2ac90cfa96f52903aa77a730e9c183"
+  },
+  "upstream": {
+    "LibreTV": "a24ad336a3f7c8a16ca93d1f1198e08ac6b7e943",
+    "TV": "b49b7027639edd42c7209651f9f0dab7150ae7ba",
+    "LunaTV": "6c0428d1ae7a8322efa8031909ec77cac22fd866"
+  }
+}

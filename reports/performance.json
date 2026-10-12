@@ -1,0 +1,329 @@
+{
+  "generatedAt": "2026-10-12T06:36:46.694Z",
+  "environment": {
+    "node": "v24.13.0",
+    "os": "win32",
+    "release": "10.0.26200",
+    "browser": "154.0.8037.99",
+    "dependencies": {
+      "hls.js": "1.7.3"
+    },
+    "devDependencies": {
+      "@playwright/test": "1.64.0",
+      "@types/node": "26.6.5",
+      "typescript": "7.0.2",
+      "vite": "8.3.4"
+    }
+  },
+  "groups": [
+    {
+      "source": "open-hls",
+      "id": "bbb",
+      "title": "Big Buck Bunny",
+      "attempts": 2,
+      "successes": 2,
+      "firstFrameMs": 3389.9500000476837,
+      "firstFrameRange": [
+        3498.800000190735,
+        3281.0999999046326
+      ],
+      "seekMs": 515.3000001907349,
+      "seekScopes": [
+        "unbuffered"
+      ],
+      "stallMs": 0,
+      "watchMs": 32512,
+      "stallRatio": 0,
+      "errors": []
+    },
+    {
+      "source": "open-hls",
+      "id": "tos",
+      "title": "Tears of Steel",
+      "attempts": 2,
+      "successes": 2,
+      "firstFrameMs": 3164.8499999046326,
+      "firstFrameRange": [
+        3139.699999809265,
+        3190
+      ],
+      "seekMs": 1449.9499998092651,
+      "seekScopes": [
+        "unbuffered"
+      ],
+      "stallMs": 0,
+      "watchMs": 32003.799999713898,
+      "stallRatio": 0,
+      "errors": []
+    },
+    {
+      "source": "open-blender",
+      "id": "sintel-trailer",
+      "title": "Sintel 预告片",
+      "attempts": 2,
+      "successes": 2,
+      "firstFrameMs": 4247.349999904633,
+      "firstFrameRange": [
+        4256.89999961853,
+        4237.800000190735
+      ],
+      "seekMs": 994.0500001907349,
+      "seekScopes": [
+        "unbuffered"
+      ],
+      "stallMs": 0,
+      "watchMs": 31997.899999141693,
+      "stallRatio": 0,
+      "errors": []
+    },
+    {
+      "source": "baofeng",
+      "id": "167469",
+      "title": "亲爱的警督 · 第1集",
+      "attempts": 2,
+      "successes": 2,
+      "firstFrameMs": 3766.7500002384186,
+      "firstFrameRange": [
+        4504.700000286102,
+        3028.800000190735
+      ],
+      "seekMs": 1470.7000000476837,
+      "seekScopes": [
+        "unbuffered"
+      ],
+      "stallMs": 0,
+      "watchMs": 30010.200000286102,
+      "stallRatio": 0,
+      "errors": []
+    },
+    {
+      "source": "baofeng",
+      "id": "165676",
+      "title": "女友的朋友 · 第1集",
+      "attempts": 2,
+      "successes": 2,
+      "firstFrameMs": 3886.7500002384186,
+      "firstFrameRange": [
+        3804.300000190735,
+        3969.2000002861023
+      ],
+      "seekMs": 783.3499999046326,
+      "seekScopes": [
+        "unbuffered"
+      ],
+      "stallMs": 0,
+      "watchMs": 29511.799999713898,
+      "stallRatio": 0,
+      "errors": []
+    }
+  ],
+  "apiGroups": [
+    {
+      "source": "baofeng",
+      "attempts": 3,
+      "successes": 3,
+      "meanMs": 1067.2030333333332,
+      "counts": [
+        {
+          "query": "流浪地球",
+          "count": 7
+        },
+        {
+          "query": "琅琊榜",
+          "count": 2
+        },
+        {
+          "query": "葬送的芙莉莲",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "source": "liangzi",
+      "attempts": 3,
+      "successes": 3,
+      "meanMs": 1253.5000333333335,
+      "counts": [
+        {
+          "query": "流浪地球",
+          "count": 7
+        },
+        {
+          "query": "琅琊榜",
+          "count": 5
+        },
+        {
+          "query": "葬送的芙莉莲",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "source": "feifan",
+      "attempts": 3,
+      "successes": 3,
+      "meanMs": 904.8866000000007,
+      "counts": [
+        {
+          "query": "流浪地球",
+          "count": 4
+        },
+        {
+          "query": "琅琊榜",
+          "count": 2
+        },
+        {
+          "query": "葬送的芙莉莲",
+          "count": 2
+        }
+      ]
+    }
+  ],
+  "mediaGroups": [
+    {
+      "source": "baofeng",
+      "attempts": 5,
+      "successfulSamples": 2,
+      "statuses": [
+        404,
+        200
+      ],
+      "segmentMbps": [
+        0.13049489952242233,
+        1.73454823564691,
+        1.245552058089516,
+        3.2466916484524653
+      ]
+    },
+    {
+      "source": "liangzi",
+      "attempts": 5,
+      "successfulSamples": 0,
+      "statuses": [
+        404
+      ],
+      "segmentMbps": []
+    },
+    {
+      "source": "feifan",
+      "attempts": 4,
+      "successfulSamples": 0,
+      "statuses": [
+        403
+      ],
+      "segmentMbps": []
+    }
+  ],
+  "initial": {
+    "attempts": 12,
+    "successes": 4
+  },
+  "acceptance": {
+    "at": "2026-10-12T06:32:09.233Z",
+    "browser": "154.0.8037.99",
+    "checks": [
+      {
+        "name": "UI and multi-source search",
+        "ok": true,
+        "evidence": {
+          "cards": 3
+        }
+      },
+      {
+        "name": "Real frame decoded",
+        "ok": true,
+        "evidence": {
+          "firstFrameMs": 3516.7999997138977
+        }
+      },
+      {
+        "name": "Manual line switch retains episode and progress",
+        "ok": true,
+        "evidence": {
+          "before": {
+            "position": 37.040994,
+            "key": "feature",
+            "source": "open-hls"
+          },
+          "after": {
+            "position": 37.064539,
+            "key": "feature",
+            "source": "open-backup"
+          }
+        }
+      },
+      {
+        "name": "Favorites and history survive reload",
+        "ok": true,
+        "evidence": {
+          "position": 37.389506
+        }
+      },
+      {
+        "name": "Automatic failover on injected HTTP 404",
+        "ok": true,
+        "evidence": {
+          "fault": "synthetic master-playlist 404; actual backup playback",
+          "before": 37.661263,
+          "after": {
+            "source": "open-backup",
+            "key": "feature",
+            "position": 37.661263
+          }
+        }
+      },
+      {
+        "name": "Mobile viewport has no horizontal overflow",
+        "ok": true,
+        "evidence": {
+          "content": 390,
+          "viewport": 390
+        }
+      },
+      {
+        "name": "PWA offline shell",
+        "ok": true,
+        "evidence": {
+          "brand": "▷StreamDesk个人影院",
+          "mediaOffline": false
+        }
+      },
+      {
+        "name": "No unhandled browser errors",
+        "ok": true,
+        "evidence": {
+          "errors": []
+        }
+      }
+    ],
+    "errors": []
+  },
+  "abr": {
+    "at": "2026-10-12T06:31:44.561Z",
+    "controlledNetwork": true,
+    "steps": [
+      {
+        "phase": "1 Mbps simulated link",
+        "level": 0,
+        "auto": true,
+        "buffer": 6.167028,
+        "time": 3.832982
+      },
+      {
+        "phase": "40 Mbps simulated link ceiling",
+        "level": 1,
+        "auto": true,
+        "buffer": 64.095359,
+        "time": 15.850943
+      }
+    ],
+    "levels": [
+      {
+        "level": 1,
+        "time": 10.008054
+      }
+    ],
+    "ok": true,
+    "observedLevelChange": true
+  }
+}
