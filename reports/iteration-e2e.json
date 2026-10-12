@@ -1,11 +1,11 @@
 {
-  "at": "2026-10-12T09:53:24.131Z",
+  "at": "2026-10-12T13:41:51.847Z",
   "browser": "154.0.8037.99",
   "checks": [
     {
       "name": "real slow API does not block catalog cards",
       "ok": true,
-      "partial": "2 条结果 · 3/5 个来源已返回 · 0 个失败",
+      "partial": "2 条结果 · 3/7 个来源已返回 · 0 个失败",
       "allSourcesFast": false
     },
     {
@@ -23,6 +23,10 @@
         {
           "url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
           "status": 404
+        },
+        {
+          "url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+          "status": 404
         }
       ],
       "result": {
@@ -30,7 +34,7 @@
         "episodeKey": "feature",
         "position": 37,
         "metrics": {
-          "firstFrameMs": 3736.0999999046326,
+          "firstFrameMs": 3856.5,
           "stallMs": 0,
           "stalls": 0,
           "watchMs": 0,
@@ -39,8 +43,8 @@
             {
               "url": "https://test-streams.mux.dev/x36xhzz/url_6/url_846/193039199_mp4_h264_aac_hq_7.ts",
               "bytes": 905784,
-              "ms": 1368.5,
-              "mbps": 5.295047131896236,
+              "ms": 1309.5999999046326,
+              "mbps": 5.533194869065125,
               "mediaMbps": 0.7246271999999999,
               "stream": "main",
               "level": 0
@@ -48,8 +52,8 @@
             {
               "url": "https://test-streams.mux.dev/x36xhzz/url_6/url_849/193039199_mp4_h264_aac_hq_7.ts",
               "bytes": 1348712,
-              "ms": 560.5,
-              "mbps": 19.250126672613735,
+              "ms": 552.2999997138977,
+              "mbps": 19.535933379665536,
               "mediaMbps": 1.0789696000000002,
               "stream": "main",
               "level": 0

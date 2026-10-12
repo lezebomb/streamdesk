@@ -6,10 +6,10 @@
 |---|---|---|
 | NVIDIA RTX Video Super Resolution | 官方浏览器功能依赖 RTX GPU 与驱动/应用设置；网页不能用标准 API 开启或确认其激活。RTX Video SDK 面向原生媒体应用并使用 Tensor Core，不是 hls.js 插件。高性能 GPU 常驻会增加笔记本耗电。 | 调研；没有改变系统/NVIDIA 设置，没有测量或宣称 RTX VSR 本身的效果。RTX 实测数字属于本项目 WebGL 滤镜。 |
 | Anime4K | MIT 的动漫恢复/放大着色器，现行算法主要针对 1080p 动漫。mpv 的 HOOK/BIND 多阶段纹理规则不能直接当作 WebGL fragment shader。Ani-SS 提供旧 Anime4K 3.x 的 WebGL2/WASM 路径，但有亮度和缩放规则兼容问题。 | 保留实验方案；未把本项目“动漫”空间滤镜冒称为 Anime4K CNN。需要逐个移植并验证多遍纹理、颜色与热稳定性。 |
-| FSRCNNX | FSRCNN 的学习型 x2 放大与多层特征计算需要专门模型/权重和 GPU 调度。作者提供训练实现及生成 mpv/libplacebo 着色器的工具；不存在已验证可直接接入本项目的 HTML video 插件。 | 调研；未在手机上运行或宣称实时。不能借用上游桌面性能数字充当本机实测。 |
+| FSRCNNX | FSRCNN 的学习型 x2 放大与多层特征计算需要专门模型/权重和 GPU 调度。作者提供训练实现与 mpv 着色器发行文件；不存在已验证可直接接入本项目的 HTML video 插件。 | 调研；未在手机上运行或宣称实时。不能借用上游桌面性能数字充当本机实测。 |
 | 单次 WebGL2 空间处理 | 原创四次双线性取样的 B-spline 平滑缩放、受限 unsharp 锐化、保边空间降噪，轻度抑制平坦区域压缩噪声/块边界。不能恢复丢失细节，也不是完整的运动补偿降噪或神经超分。 | 已实现并在 Intel、RTX 5060 Laptop、Mate 60 Maleoon 910 验证。默认关闭。 |
 
-主资料：[NVIDIA FAQ](https://nvidia.custhelp.com/app/answers/detail/a_id/5448/~/rtx-video-faq)、[RTX Video SDK](https://developer.nvidia.com/rtx-video-sdk)、[Anime4K](https://github.com/bloc97/Anime4K)、[Ani-SS](https://github.com/pinnouse/ani-ss)、[FSRCNN 作者仓库](https://github.com/igv/FSRCNN-TensorFlow)。算法仓库的授权与模型授权需分别复核；本轮没有复制这些神经网络代码或权重。
+主资料：[NVIDIA FAQ](https://nvidia.custhelp.com/app/answers/detail/a_id/5448/~/rtx-video-faq)、[RTX Video SDK](https://developer.nvidia.com/rtx-video-sdk)、[Anime4K](https://github.com/bloc97/Anime4K)、[Ani-SS](https://github.com/pinnouse/ani-ss)、[FSRCNN 作者仓库](https://github.com/igv/FSRCNN-TensorFlow)、[FSRCNNX 发布](https://github.com/igv/FSRCNN-TensorFlow/releases)。算法仓库的授权与模型授权需分别复核；本轮没有复制这些神经网络代码或权重。
 
 ## 浏览器与设备差异
 

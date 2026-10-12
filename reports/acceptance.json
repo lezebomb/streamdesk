@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-12T10:07:37.319Z",
+  "at": "2026-10-12T13:39:33.733Z",
   "browser": "154.0.8037.99",
   "checks": [
     {
@@ -13,7 +13,7 @@
       "name": "Real frame decoded",
       "ok": true,
       "evidence": {
-        "firstFrameMs": 2905.300000190735
+        "firstFrameMs": 3189.800000190735
       }
     },
     {
@@ -21,12 +21,12 @@
       "ok": true,
       "evidence": {
         "before": {
-          "position": 37.045753,
+          "position": 37.113027,
           "key": "feature",
           "source": "open-hls"
         },
         "after": {
-          "position": 37.057638,
+          "position": 37.136763,
           "key": "feature",
           "source": "open-backup"
         }
@@ -36,7 +36,7 @@
       "name": "Favorites and history survive reload",
       "ok": true,
       "evidence": {
-        "position": 37.306164
+        "position": 37.393444
       }
     },
     {
@@ -44,11 +44,11 @@
       "ok": true,
       "evidence": {
         "fault": "synthetic master-playlist 404; actual backup playback",
-        "before": 37.454549,
+        "before": 37.631683,
         "after": {
           "source": "open-backup",
           "key": "feature",
-          "position": 37.447792
+          "position": 37.631683
         }
       }
     },

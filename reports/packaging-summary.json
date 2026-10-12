@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-12T13:57:27.936Z",
+  "ok": true,
+  "version": "0.3.0",
+  "files": 130,
+  "clean": "D:\\tv\\artifacts\\clean-checkout-0.3.0-1791813445619",
+  "packaged": "D:\\tv\\artifacts\\clean-checkout-0.3.0-1791813445619\\artifacts\\streamdesk-0.3.0",
+  "checks": [
+    "clean checkout without research/raw provider reports",
+    "all manifest files exist",
+    "built asset served",
+    "Node24 starts without npm runtime deps",
+    "catalog API returns actual metadata",
+    "private config excluded"
+  ],
+  "log": "StreamDesk production http://127.0.0.1:4186\n"
+}
