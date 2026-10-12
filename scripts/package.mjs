@@ -6,9 +6,9 @@ const root=process.cwd(),stage=path.resolve('artifacts',`streamdesk-${version}`)
 if(!stage.startsWith(root+path.sep))throw new Error('打包目录超出工作区');
 try{await fs.stat(stage);throw new Error('打包目录已存在，保留原包；请使用新的版本目录')}catch(e){if(e.code!=='ENOENT')throw e}
 await fs.mkdir(stage,{recursive:true});
-for(const directory of ['src','shared','server','public','dist','scripts','tests','reports'])await fs.cp(directory,path.join(stage,directory),{recursive:true});
+for(const directory of ['src','shared','server','public','dist','scripts','tests','reports','docs','.github'])await fs.cp(directory,path.join(stage,directory),{recursive:true});
 for(const file of ['package.json','package-lock.json','tsconfig.json','vite.config.ts','index.html','README.md','LICENSE','THIRD_PARTY_NOTICES.md','Start-StreamDesk.cmd','.npmrc','.env.example','.gitignore'])await fs.copyFile(file,path.join(stage,file));
-await fs.mkdir(path.join(stage,'data'));for(const file of ['sources.example.json','candidates.json','acceptance-sources.json','acceptance-works.json','quality-sources.json'])await fs.copyFile(path.join('data',file),path.join(stage,'data',file));
+await fs.mkdir(path.join(stage,'data'));for(const file of ['sources.example.json','candidates.json','acceptance-sources.json','acceptance-works.json','quality-sources.json','native-config.example.json'])await fs.copyFile(path.join('data',file),path.join(stage,'data',file));
 await fs.cp('LICENSES',path.join(stage,'LICENSES'),{recursive:true});await fs.copyFile('node_modules/hls.js/LICENSE',path.join(stage,'LICENSES','hls.js.txt'));
 await fs.mkdir(path.join(stage,'research'));
 // Keep reproducible HTTP evidence and media metrics. Do not redistribute full third-party website bundles.

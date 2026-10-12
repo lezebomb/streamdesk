@@ -2,8 +2,9 @@ import fs from 'node:fs/promises';
 import dns from 'node:dns/promises';
 import net from 'node:net';
 import {createAppleCmsAdapter} from '../shared/source-adapter.ts';
+import {cacheCmsTransport} from '../shared/source-cache.ts';
 import { catalog } from './catalog.mjs';
-import { poolMap } from '../shared/policy.ts';
+import {searchSources} from '../shared/source-search.ts';
 export async function readSources(){let raw;const configured=process.env.STREAMDESK_SOURCES;if(configured)return validateSources(JSON.parse(await fs.readFile(configured,'utf8')));try{raw=await fs.readFile('data/sources.json','utf8')}catch{raw=await fs.readFile('data/sources.example.json','utf8')}return validateSources(JSON.parse(raw));}
 export function validateSources(sources){
  if(!Array.isArray(sources)||sources.length>20)throw new Error('最多配置 20 个来源');
@@ -35,20 +36,11 @@ async function cmsFetch(source,params,signal){
  const chunks=[];let bytes=0;for await(const chunk of r.body){bytes+=chunk.byteLength;if(bytes>2*1024*1024)throw new Error('API 响应过大');chunks.push(Buffer.from(chunk))}
  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
-const memo=new Map();
-export function clearCache(){memo.clear()}
-async function cached(key,fn){const old=memo.get(key);if(old&&old.until>Date.now())return old.value;const value=await fn();memo.set(key,{until:Date.now()+60000,value});if(memo.size>300)memo.delete(memo.keys().next().value);return value}
+const cmsCache=cacheCmsTransport(cmsFetch);
+export function clearCache(){cmsCache.clear()}
 export const adapters=new Map([
  ['catalog',{search:async(s,q)=>catalog(s).filter(f=>!q||f.title.toLowerCase().includes(q.toLowerCase())),detail:async(s,id)=>catalog(s).find(f=>f.id===id)}],
  ['embed',{search:async(s,q)=>(s.items||[]).map(f=>({...f,sourceId:s.id})).filter(f=>!q||f.title.toLowerCase().includes(q.toLowerCase())),detail:async(s,id)=>{const f=s.items.find(f=>f.id===id);return f?{...f,sourceId:s.id}:undefined}}],
- ['applecms',createAppleCmsAdapter((s,params,signal)=>cached(`${s.api}:${JSON.stringify(params)}`,()=>cmsFetch(s,params,signal)))]
+ ['applecms',createAppleCmsAdapter(cmsCache.fetch)]
 ]);
-export async function searchAll(sources,q,signal,onRow=()=>{}){
- const bounded=AbortSignal.any([signal,AbortSignal.timeout(20000)].filter(Boolean));
- return poolMap(sources.filter(s=>s.enabled&&(s.type!=='applecms'||q.trim())),2,async s=>{
-  const t=performance.now();let row;
-  try{bounded.throwIfAborted();const list=await adapters.get(s.type).search(s,q,bounded);row={sourceId:s.id,ok:true,ms:performance.now()-t,list}}
-  catch(e){row={sourceId:s.id,ok:false,ms:performance.now()-t,list:[],error:e.message}}
-  onRow(row);return row;
- });
-}
+export async function searchAll(sources,q,signal,onRow=()=>{}){return searchSources(sources,q,adapters,signal,onRow)}

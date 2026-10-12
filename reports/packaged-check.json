@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-12T10:00:30.509Z",
+  "path": "artifacts/streamdesk-0.2.0",
+  "runtimeDependenciesInstalled": false,
+  "sources": 10,
+  "progressiveEvents": [
+    "start",
+    "source",
+    "source",
+    "source",
+    "source",
+    "source",
+    "done"
+  ],
+  "film": "爱情公寓3",
+  "episodeCount": 24,
+  "detailMs": 1.541300000011688,
+  "ok": true
+}

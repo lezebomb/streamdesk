@@ -1,3 +1,68 @@
+# StreamDesk 0.2.0
+
+在 0.1.0 上迭代，保留 hls.js / LibreTV 恢复核心与原页面布局。新增 Apple CMS 全播放分组、渐进式搜索、同年同季同半集匹配、实际清晰度与帧率、平滑手动档位切换、设备/网络缓冲策略和可迁移收藏历史。
+
+默认增加光速来源，平台付费入口搜索按用户要求取消。真实作品测试、30 分钟连续播放、公开 2160p 解码与失败证据见 [实测报告](reports/performance.md) 和 [逐部汇总](reports/coverage-summary.json)。不同来源的 API 成功与媒体可播分别计数。
+
+GitHub 源码不包含 dist，需要 npm ci 和 npm run build 后启动。交付 ZIP 包含已构建的 dist，安装 Node.js 24 后可直接启动。升级前关闭旧 StreamDesk 服务窗口，保留 data/sources.json 并导出收藏/历史，重新启动相同端口以保持 PWA 存储原点。
+
+[Windows / Android 架构与更新方案](docs/clients-and-updates.md) 已准备；本版本没有独立 Windows 安装器或 Android APK。API 后端仍运行于电脑 Node，不把手机布局/ADB 转发视为 Android 独立客户端。
+
+## 本轮复现
+
+```powershell
+npm ci
+npm test
+npm run build
+npm run test:smoke
+# 普通启动；生产使用 Node 24，无须 npm 运行时依赖
+node server/index.mjs
+```
+
+另一个终端针对已运行应用：
+
+```powershell
+$env:APP_URL='http://127.0.0.1:4173'
+npm run test:iteration
+npm run test:e2e
+```
+
+UHD 测试使用独立配置：
+
+```powershell
+$env:PORT='4177'
+$env:STREAMDESK_SOURCES='data/quality-sources.json'
+node server/index.mjs
+# 另一个终端
+$env:APP_URL='http://127.0.0.1:4177'
+npm run test:quality
+node scripts/abr.mjs
+```
+
+31 部作品测试需要另一个测试服务：
+
+```powershell
+$env:PORT='4176'
+$env:STREAMDESK_SOURCES='data/acceptance-sources.json'
+node server/index.mjs
+# 另一个终端：先生成 API / 媒体证据
+$env:RUN_DIR='reports/runs/my-run'
+npm run acceptance:search
+# 浏览器逐部 45 秒 + 未缓存快进
+$env:APP_URL='http://127.0.0.1:4176'
+npm run acceptance:playback
+# 爱情公寓3 第一集，30 分钟，单源隔离
+$env:WORK_INDEX='11'
+$env:SOURCE_ID='guangsu'
+$env:SOAK_MINUTES='30'
+npm run acceptance:soak
+```
+
+RESUME=1 可从已有证据续跑；ONLY_TITLES 以英文逗号限制复测片名。每次实验使用新的 RUN_DIR 保留旧证据。完整本地证据随交付包提供，GitHub 仅保存小型汇总，避免提交大量临时截图。Chrome 为 Windows 默认测试浏览器；Linux 先 npx playwright install --with-deps chromium。
+
+CI 在 Windows/Linux 运行单元测试与构建，另以隔离外网的浏览器检查 PWA 和数据持久化。release-pwa 工作流生成 ZIP 与 SHA256；原生签名和应用内安装更新需要后续客户端构建，当前没有假成功的原生构建步骤。
+
+下列内容保留原型的调查背景与使用约束，当前实测数字以本轮报告为准。
 # StreamDesk 个人影视工作台
 
 可运行的本地 PWA 原型，复用 LibreTV 的 CMS 解析与恢复核心，使用 hls.js 播放。已实现多来源搜索、详情、选集、直接媒体播放、收藏、历史、来源评分、手动/自动换源和进度恢复。FrameXTV 只作为可配置的 Embed 类型，未声称其内部视频已实测可播。
@@ -16,7 +81,7 @@ node server/index.mjs
 
 浏览器打开 **http://127.0.0.1:4173**。Chromium 浏览器满足安装条件时，可点击「安装应用」或浏览器的安装按钮，作为电脑 PWA 使用。首次进入安装 Service Worker 后，外壳可离线打开；搜索、详情和远程视频仍需要后端/网络。
 
-默认启用公开影片 HLS、同 CDN 备用清单、Blender 预告以及暴风。搜索近期样本可用片名「亲爱的警督」「女友的朋友」。这些片名来自实测时 API 最新列表，之后可能变化。旧 MP4 / 量子 / 非凡 / FrameXTV 默认停用。暴风的部分旧片已确认失效，不能把搜索命中当成可播放。
+默认启用公开影片 HLS、同 CDN 备用清单、Blender 预告、暴风与光速。Apple UHD 测试目录可在来源管理启用。搜索近期样本可用片名「亲爱的警督」「女友的朋友」。这些片名来自实测时 API 最新列表，之后可能变化。旧 MP4 / 量子 / 非凡 / FrameXTV 默认停用。暴风的部分旧片已确认失效，不能把搜索命中当成可播放。
 
 在「来源管理」切换启用状态；高级 JSON 变更保存至 `data/sources.json`，此文件不进入版本控制。首次运行读取 `data/sources.example.json`。不修改默认模板即可继续复现本次配置。
 

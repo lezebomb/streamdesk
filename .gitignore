@@ -24,6 +24,8 @@ reports/*.json
 !reports/reproducibility.json
 !reports/coverage-summary.json
 !reports/quality.json
+!reports/abr.json
+!reports/abr.json
 !reports/iteration-e2e.json
 !reports/packaged-check.json
 reports/*.png

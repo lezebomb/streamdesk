@@ -4,7 +4,7 @@
 
 ## 共用代码与边界
 
-`shared/source-adapter.ts` 的 Apple CMS 适配器已经由 Node 服务实际使用。`shared/cms.ts`、`policy.ts`、`search.ts`、`playback-policy.ts`、`library.ts` 负责分组、身份匹配、逐源结果、恢复/缓冲策略和版本化备份；没有 Node 运行时依赖。`shared/platform.ts` 定义来源、持久化与播放器接口。
+`shared/source-adapter.ts` 的 Apple CMS 适配器已经由 Node 服务实际使用。`shared/cms.ts`、`policy.ts`、`source-search.ts`、`search.ts`、`playback-policy.ts`、`library.ts` 负责分组、身份匹配、逐源结果、恢复/缓冲策略和版本化备份；没有 Node 运行时依赖。`shared/platform.ts` 定义来源、持久化与播放器接口。
 
 当前 `server/` 仍依赖 Node 的文件、DNS 与 HTTP 模块。Capacitor/WebView 不能直接运行它。Android 不能通过打包网页、ADB 转发或连接电脑来宣称独立运行。
 
@@ -38,3 +38,5 @@ Windows 首次迁移从当前 PWA 导出，再由新客户端导入；Android �
 Windows 使用签名 NSIS 和 electron-updater 的完整下载/校验/安装流程；下载到临时目录，失败不替换当前安装。用户确认重启后再应用更新。Android 检查 Releases，下载并验证包完整性，交给系统 Package Installer 覆盖安装；系统校验包名与签名，用户授权安装。不得静默安装，也不卸载旧版作为更新步骤。
 
 参考：[Electron 更新文档](https://www.electronjs.org/docs/latest/tutorial/updates)、[electron-builder 自动更新](https://github.com/electron-userland/electron-builder/blob/master/website/docs/features/auto-update.md)、[Android 应用签名](https://developer.android.com/studio/publish/app-signing)。安装器故障恢复与签名身份须在真实包上验证，文档不替代验证。
+
+当前库备份只保留作品元数据与历史选中的剧集，不重复存储上千集播放列表；详情播放列表按需重新获取。已用爱情公寓3 第二集、37 秒历史和原收藏验证 0.1.0 键迁移。

@@ -59,7 +59,7 @@ export class Player {
     if([401,403,404,410].includes(d.response?.code||0)){terminal(`来源返回 HTTP ${d.response!.code}`);return}if(!d.fatal)return;
     // Hls already performed its bounded manifest retry. Repeating a broken/CORS-blocked
     // startup manifest in the recovery controller delays a usable alternate source.
-    if(this.metrics.firstFrameMs===null&&/^(?:manifestLoadError|manifestLoadTimeOut|manifestParsingError|manifestIncompatibleCodecsError|levelEmptyError)$/.test(d.details)){terminal('来源媒体清单不可用：'+d.details);return}
+    if(/^(?:manifestLoadError|manifestLoadTimeOut|manifestParsingError|manifestIncompatibleCodecsError|levelEmptyError)$/.test(d.details)){terminal('来源媒体清单不可用：'+d.details);return}
     // Hls already performed its bounded manifest retry. Repeating a broken/CORS-blocked
     // startup manifest in the recovery controller delays a usable alternate source.
     if(this.metrics.firstFrameMs===null&&/^(?:manifestLoadError|manifestLoadTimeOut|manifestParsingError|manifestIncompatibleCodecsError|levelEmptyError)$/.test(d.details)){terminal('来源媒体清单不可用：'+d.details);return}
@@ -70,7 +70,7 @@ export class Player {
    });
    hls.attachMedia(v);hls.loadSource(episode.url);
   }else if(episode.kind==='mp4'||(episode.kind==='hls'&&v.canPlayType('application/vnd.apple.mpegurl'))){v.src=episode.url;v.load();play()}
-  else terminal('当前浏览器不支持该媒体格式');
+  else {terminal('当前浏览器不支持该媒体格式');return}
   this.watchdog=setInterval(()=>{
    const now=performance.now(),delta=now-this.lastTick;this.lastTick=now;
    if(!this.settled&&v.readyState>=2&&Number.isFinite(v.currentTime))this.lastPosition=v.currentTime;

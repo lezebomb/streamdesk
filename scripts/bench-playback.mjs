@@ -19,8 +19,8 @@ try{
    await page.waitForTimeout(watchSeconds*1000);
    const before=await page.evaluate(()=>({time:document.querySelector('video').currentTime,paused:document.querySelector('video').paused,metrics:window.streamdesk.metrics}));
    if(before.time<initial.time+Math.min(4,watchSeconds*.6))throw new Error('Decoded first frame but playback did not advance sufficiently');
-   const seekPlan=await page.evaluate(()=>{const v=document.querySelector('video'),ends=Array.from({length:v.buffered.length},(_,i)=>v.buffered.end(i)),bufferEnd=Math.max(0,...ends),target=Math.min(v.duration-8,Math.max(60,bufferEnd+30));const scope=ends.some((end,i)=>v.buffered.start(i)<=target&&end>=target)?'buffered':'unbuffered';v.currentTime=target;return {target,scope,bufferEnd}});test.seekPlan=seekPlan;
-   await page.waitForFunction(()=>window.streamdesk.metrics.seekMs.length>0,{},{timeout:16000});
+   const seekPlan=await page.evaluate(()=>{const v=document.querySelector('video'),ends=Array.from({length:v.buffered.length},(_,i)=>v.buffered.end(i)),bufferEnd=Math.max(0,...ends),target=Math.min(v.duration-8,Math.max(60,bufferEnd+30)),previousSeekCount=window.streamdesk.metrics.seekMs.length;const scope=ends.some((end,i)=>v.buffered.start(i)<=target&&end>=target)?'buffered':'unbuffered';v.currentTime=target;return {target,scope,bufferEnd,previousSeekCount}});test.seekPlan=seekPlan;
+   await page.waitForFunction(previous=>window.streamdesk.metrics.seekMs.length>previous,seekPlan.previousSeekCount,{timeout:16000});
    await page.waitForTimeout(4000);
    const data=await page.evaluate(()=>({metrics:window.streamdesk.metrics,apiMs:window.__testApiMs,time:document.querySelector('video').currentTime,duration:document.querySelector('video').duration,levels:window.streamdesk.player.qualityLevels(),buffer:window.streamdesk.player.bufferSeconds(),codec:document.querySelector('video').getVideoPlaybackQuality?.()}));
    Object.assign(test,data,{seekMs:data.metrics.seekMs.at(-1),success:data.time>seekPlan.target+1&&data.metrics.errors.filter(e=>e.type==='native').length===0});

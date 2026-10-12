@@ -1,0 +1,693 @@
+{
+  "at": "2026-10-12T09:30:21.804Z",
+  "version": "0.2.0",
+  "works": 31,
+  "playedWorks": 31,
+  "successfulPlaybackAttempts": 33,
+  "sourceStats": [
+    {
+      "id": "baofeng",
+      "apiOk": 31,
+      "apiMs": 2325.455748387091,
+      "matched": 27,
+      "reachableGroups": 2,
+      "groups": 27,
+      "playedWorks": 2,
+      "playedAttempts": 2,
+      "firstFrameMeanMs": 3752.25,
+      "firstFrameP95Ms": 3948.800000190735,
+      "seekMeanMs": 847.2500002384186,
+      "stallMs": 179.90000009536743,
+      "watchMs": 100518.90000009537,
+      "segmentMbps": 1.9465580245040792,
+      "faultCounts": {
+        "HTTP 404": 25
+      }
+    },
+    {
+      "id": "liangzi",
+      "apiOk": 31,
+      "apiMs": 2072.0420387096824,
+      "matched": 26,
+      "reachableGroups": 1,
+      "groups": 26,
+      "playedWorks": 1,
+      "playedAttempts": 1,
+      "firstFrameMeanMs": 4922.199999809265,
+      "firstFrameP95Ms": 4922.199999809265,
+      "seekMeanMs": 1919.5999999046326,
+      "stallMs": 0,
+      "watchMs": 49495.30000066757,
+      "segmentMbps": 4.9488715528194085,
+      "faultCounts": {
+        "HTTP 404": 25
+      }
+    },
+    {
+      "id": "feifan",
+      "apiOk": 31,
+      "apiMs": 1833.436412903229,
+      "matched": 24,
+      "reachableGroups": 0,
+      "groups": 24,
+      "playedWorks": 0,
+      "playedAttempts": 0,
+      "firstFrameMeanMs": null,
+      "firstFrameP95Ms": null,
+      "seekMeanMs": null,
+      "stallMs": 0,
+      "watchMs": 0,
+      "segmentMbps": null,
+      "faultCounts": {
+        "HTTP 403": 24
+      }
+    },
+    {
+      "id": "guangsu",
+      "apiOk": 31,
+      "apiMs": 2577.5435806451505,
+      "matched": 30,
+      "reachableGroups": 30,
+      "groups": 30,
+      "playedWorks": 30,
+      "playedAttempts": 30,
+      "firstFrameMeanMs": 5415.686666663488,
+      "firstFrameP95Ms": 6797.900000095367,
+      "seekMeanMs": 1111.596666653951,
+      "stallMs": 94.7000002861023,
+      "watchMs": 1527036.6000003815,
+      "segmentMbps": 3.7620023449984554,
+      "faultCounts": {}
+    },
+    {
+      "id": "wujin",
+      "apiOk": 29,
+      "apiMs": 4013.2152827586206,
+      "matched": 24,
+      "reachableGroups": 0,
+      "groups": 24,
+      "playedWorks": 0,
+      "playedAttempts": 0,
+      "firstFrameMeanMs": null,
+      "firstFrameP95Ms": null,
+      "seekMeanMs": null,
+      "stallMs": 0,
+      "watchMs": 0,
+      "segmentMbps": null,
+      "faultCounts": {
+        "HTTP 403": 24
+      }
+    }
+  ],
+  "perWork": [
+    {
+      "index": 1,
+      "title": "流浪地球",
+      "year": "2019",
+      "category": "电影",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 5252.200000286102,
+      "seekMs": 2015.4000000953674,
+      "watchSeconds": 49.5012999997139
+    },
+    {
+      "index": 2,
+      "title": "流浪地球2",
+      "year": "2023",
+      "category": "电影",
+      "matchedSources": 5,
+      "reachableSources": [
+        "liangzi",
+        "guangsu"
+      ],
+      "playedSources": [
+        "liangzi",
+        "guangsu"
+      ],
+      "firstFrameMs": 5248.700000047684,
+      "seekMs": 1234.0499999523163,
+      "watchSeconds": 99.5015
+    },
+    {
+      "index": 3,
+      "title": "肖申克的救赎",
+      "year": "1994",
+      "category": "电影",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 5113.900000095367,
+      "seekMs": 781.5999999046326,
+      "watchSeconds": 49.99959999990463
+    },
+    {
+      "index": 4,
+      "title": "霸王别姬",
+      "year": "1993",
+      "category": "电影",
+      "matchedSources": 4,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 6299.299999713898,
+      "seekMs": 1434.0999999046326,
+      "watchSeconds": 51.505900000095366
+    },
+    {
+      "index": 5,
+      "title": "千与千寻",
+      "year": "2001",
+      "category": "电影",
+      "matchedSources": 2,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 4844,
+      "seekMs": 645.4000000953674,
+      "watchSeconds": 51.5069000005722
+    },
+    {
+      "index": 6,
+      "title": "星际穿越",
+      "year": "2014",
+      "category": "电影",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 5086.099999904633,
+      "seekMs": 348.90000009536743,
+      "watchSeconds": 49.97459999990463
+    },
+    {
+      "index": 7,
+      "title": "南京照相馆",
+      "year": "2025",
+      "category": "电影",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 4746,
+      "seekMs": 658.6999998092651,
+      "watchSeconds": 51.007800000190734
+    },
+    {
+      "index": 8,
+      "title": "哪吒之魔童闹海",
+      "year": "2025",
+      "category": "电影",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 5682.799999713898,
+      "seekMs": 898.1999998092651,
+      "watchSeconds": 50.999700000286104
+    },
+    {
+      "index": 9,
+      "title": "浪浪山小妖怪",
+      "year": "2025",
+      "category": "电影",
+      "matchedSources": 3,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 5075.900000095367,
+      "seekMs": 345.40000009536743,
+      "watchSeconds": 51
+    },
+    {
+      "index": 10,
+      "title": "疯狂动物城",
+      "year": "2016",
+      "category": "电影",
+      "matchedSources": 1,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 6373.300000190735,
+      "seekMs": 3437.800000190735,
+      "watchSeconds": 47.485400000572206
+    },
+    {
+      "index": 11,
+      "title": "爱情公寓3",
+      "year": "2012",
+      "category": "电视剧",
+      "matchedSources": 4,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 6581,
+      "seekMs": 793.1999998092651,
+      "watchSeconds": 50.9855
+    },
+    {
+      "index": 12,
+      "title": "怪奇物语第一季",
+      "year": "2016",
+      "category": "电视剧",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 4395.099999904633,
+      "seekMs": 726.9000000953674,
+      "watchSeconds": 51.5092000002861
+    },
+    {
+      "index": 13,
+      "title": "琅琊榜",
+      "year": "2015",
+      "category": "电视剧",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 5776.800000190735,
+      "seekMs": 388.40000009536743,
+      "watchSeconds": 51.5097000002861
+    },
+    {
+      "index": 14,
+      "title": "甄嬛传",
+      "year": "2011",
+      "category": "电视剧",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 5792.900000095367,
+      "seekMs": 769.2999997138977,
+      "watchSeconds": 51.51189999961853
+    },
+    {
+      "index": 15,
+      "title": "西游记",
+      "year": "1986",
+      "category": "电视剧",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 4887.799999713898,
+      "seekMs": 777,
+      "watchSeconds": 50.49799999952316
+    },
+    {
+      "index": 16,
+      "title": "武林外传",
+      "year": "2006",
+      "category": "电视剧",
+      "matchedSources": 2,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 4647.5,
+      "seekMs": 333.59999990463257,
+      "watchSeconds": 51.014900000095366
+    },
+    {
+      "index": 17,
+      "title": "狂飙",
+      "year": "2023",
+      "category": "电视剧",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 5488.900000095367,
+      "seekMs": 557.1999998092651,
+      "watchSeconds": 51.001800000190734
+    },
+    {
+      "index": 18,
+      "title": "庆余年第二季",
+      "year": "2024",
+      "category": "电视剧",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 4618.800000190735,
+      "seekMs": 320.80000019073486,
+      "watchSeconds": 51.003699999809264
+    },
+    {
+      "index": 19,
+      "title": "亲爱的警督",
+      "category": "电视剧",
+      "matchedSources": 4,
+      "reachableSources": [
+        "baofeng"
+      ],
+      "playedSources": [
+        "baofeng"
+      ],
+      "firstFrameMs": 3555.699999809265,
+      "seekMs": 857.8000001907349,
+      "watchSeconds": 50.01690000009537
+    },
+    {
+      "index": 20,
+      "title": "女友的朋友",
+      "year": "2026",
+      "category": "动漫",
+      "matchedSources": 3,
+      "reachableSources": [
+        "baofeng",
+        "guangsu"
+      ],
+      "playedSources": [
+        "baofeng",
+        "guangsu"
+      ],
+      "firstFrameMs": 3689.850000143051,
+      "seekMs": 844.3000001907349,
+      "watchSeconds": 101.018
+    },
+    {
+      "index": 21,
+      "title": "葬送的芙莉莲",
+      "year": "2023",
+      "category": "动漫",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 6276.799999713898,
+      "seekMs": 705.4000000953674,
+      "watchSeconds": 51.0097999997139
+    },
+    {
+      "index": 22,
+      "title": "鬼灭之刃",
+      "year": "2019",
+      "category": "动漫",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 4731.199999809265,
+      "seekMs": 1473.5999999046326,
+      "watchSeconds": 51.50090000009537
+    },
+    {
+      "index": 23,
+      "title": "进击的巨人",
+      "year": "2013",
+      "category": "动漫",
+      "matchedSources": 4,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 5670.400000095367,
+      "seekMs": 1960.5999999046326,
+      "watchSeconds": 50.50010000038147
+    },
+    {
+      "index": 24,
+      "title": "钢之炼金术师FA",
+      "year": "2009",
+      "category": "动漫",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 4760.5,
+      "seekMs": 339.19999980926514,
+      "watchSeconds": 51.503699999809264
+    },
+    {
+      "index": 25,
+      "title": "火影忍者",
+      "year": "2002",
+      "category": "动漫",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 5670.099999904633,
+      "seekMs": 951,
+      "watchSeconds": 51.495799999713896
+    },
+    {
+      "index": 26,
+      "title": "海贼王",
+      "year": "1999",
+      "category": "动漫",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 6797.900000095367,
+      "seekMs": 1560.5,
+      "watchSeconds": 51.99850000047684
+    },
+    {
+      "index": 27,
+      "title": "名侦探柯南",
+      "year": "1996",
+      "category": "动漫",
+      "matchedSources": 4,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 4067,
+      "seekMs": 1145,
+      "watchSeconds": 51.989599999904634
+    },
+    {
+      "index": 28,
+      "title": "间谍过家家",
+      "year": "2022",
+      "category": "动漫",
+      "matchedSources": 2,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 6138.5,
+      "seekMs": 4801.900000095367,
+      "watchSeconds": 50.99339999961853
+    },
+    {
+      "index": 29,
+      "title": "胆大党",
+      "year": "2024",
+      "category": "动漫",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 5847.400000095367,
+      "seekMs": 863.0999999046326,
+      "watchSeconds": 51.503300000190734
+    },
+    {
+      "index": 30,
+      "title": "牧神记",
+      "year": "2024",
+      "category": "动漫",
+      "matchedSources": 5,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 7446.599999904633,
+      "seekMs": 1811.2000002861023,
+      "watchSeconds": 51.507400000095366
+    },
+    {
+      "index": 31,
+      "title": "三体",
+      "year": "2023",
+      "category": "电视剧",
+      "matchedSources": 3,
+      "reachableSources": [
+        "guangsu"
+      ],
+      "playedSources": [
+        "guangsu"
+      ],
+      "firstFrameMs": 5395.799999713898,
+      "seekMs": 1104.0999999046326,
+      "watchSeconds": 50.496
+    }
+  ],
+  "soak": {
+    "title": "爱情公寓3",
+    "success": true,
+    "observedMs": 1806053.8428,
+    "mediaAdvanceSeconds": 1806.044852,
+    "firstFrameMs": 6435.400000095367,
+    "stallMs": 0,
+    "stalls": 0
+  },
+  "quality": {
+    "ok": true,
+    "checks": [
+      {
+        "name": "same-count quality list refresh",
+        "ok": true
+      },
+      {
+        "name": "manual HLS level change",
+        "ok": true,
+        "stallDelta": 0
+      },
+      {
+        "name": "real AV1 UHD available",
+        "ok": true
+      },
+      {
+        "name": "decoded UHD frames",
+        "ok": true,
+        "quality": {
+          "width": 3840,
+          "height": 2160,
+          "fps": 23.976023976023946,
+          "codec": "av01.0.12M.10.0.111.01.01.01.0",
+          "manifestBitrate": 18172686,
+          "segmentMediaMbps": 8.810163836163838
+        }
+      },
+      {
+        "name": "film change resets manual/UHD state",
+        "ok": true
+      }
+    ]
+  },
+  "realFailover": {
+    "ok": true,
+    "totalOpenToAlternateFrameMs": 11290.5684,
+    "position": 40.90787
+  },
+  "abr": {
+    "ok": true,
+    "observedLevelChange": true,
+    "steps": [
+      {
+        "phase": "1 Mbps simulated link",
+        "level": 0,
+        "auto": true,
+        "buffer": 5.1177779999999995,
+        "time": 4.882232
+      },
+      {
+        "phase": "40 Mbps simulated link ceiling",
+        "level": 1,
+        "auto": true,
+        "buffer": 63.046341,
+        "time": 16.899961
+      }
+    ]
+  },
+  "evidence": {
+    "initial": "reports/runs/coverage-2026-10-12",
+    "followup": "reports/runs/followup-2026-10-12",
+    "notes": "Initial failures remain unchanged; verified aliases, category correction and bounded pagination are separate follow-up evidence",
+    "seekConfirmation": "reports/runs/seek-confirmation-2026-10-12",
+    "initialSeekFailurePreserved": true
+  },
+  "detailCache": {
+    "at": "2026-10-12T09:25:01.978Z",
+    "source": "guangsu",
+    "title": "爱情公寓3",
+    "searchMs": 2116.0199,
+    "cachedDetailMs": 2.6242999999999483,
+    "episodes": 24,
+    "networkLatencyClaim": false
+  },
+  "upgradeHistory": {
+    "ok": true,
+    "episode": "season:3:episode:2",
+    "position": 40.904541,
+    "favorite": "♥ 已收藏"
+  }
+}
