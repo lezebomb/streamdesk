@@ -4,6 +4,7 @@
   {"id":"open-blender","name":"Blender · 公开预告","type":"catalog","enabled":true,"catalog":"blender"},
   {"id":"open-mp4","name":"旧 MP4 · 实测 403","type":"catalog","enabled":false,"catalog":"mp4"},
   {"id":"baofeng","name":"暴风 · 部分新片可播","type":"applecms","enabled":true,"api":"https://bfzyapi.com/api.php/provide/vod/"},
+  {"id":"guangsu","name":"光速 · 部分样本已可播","type":"applecms","enabled":true,"priority":10,"api":"https://api.guangsuapi.com/api.php/provide/vod/"},
   {"id":"liangzi","name":"量子 · 样本媒体 404","type":"applecms","enabled":false,"api":"https://cj.lziapi.com/api.php/provide/vod/"},
   {"id":"feifan","name":"非凡 · 样本媒体 403","type":"applecms","enabled":false,"api":"http://api.ffzyapi.com/api.php/provide/vod/"},
   {"id":"framextv","name":"FrameXTV · Embed 待验证","type":"embed","enabled":false,"items":[]}

@@ -1,4 +1,5 @@
 import type {Episode,Film,Health} from './model';
+import {seasonOf} from './cms.ts';
 export function blankHealth():Health{return {apiSamples:0,apiFailures:0,apiMs:null,playSamples:0,playFailures:0,startupMs:null,mbps:null,stallMs:0,watchMs:0,cooldownUntil:0,failStreak:0,updatedAt:0}}
 const ema=(old:number|null,n:number)=>old===null?n:old*.7+n*.3;
 export function observe(h:Health,event:{kind:'api'|'play';ok:boolean;ms?:number;mbps?:number;stallMs?:number;watchMs?:number},now=Date.now()):Health{
@@ -22,12 +23,16 @@ export function sameFilm(a:Film,b:Film):boolean{
  const edition=(title:string)=>/解说/.test(title)?'commentary':/预告/.test(title)?'trailer':'feature';
  if(edition(a.title)!==edition(b.title))return false;
  if(a.category&&b.category&&a.category!==b.category)return false;
+ if(a.year&&b.year&&a.year!==b.year)return false;
+ const sa=a.season??seasonOf(a.title,a.category),sb=b.season??seasonOf(b.title,b.category);
+ if(sa!==sb)return false;
  if(a.canonicalId&&b.canonicalId)return a.canonicalId===b.canonicalId;
  const normalize=(s:string)=>s.toLowerCase().replace(/[\s\p{P}\p{S}]/gu,'');
- return normalize(a.title)===normalize(b.title)&&!!a.year&&a.year===b.year&&a.category===b.category;
+ const base=(f:Film)=>f.title.replace(/第\s*[\d零一二三四五六七八九十两]+\s*季/gi,'').replace(/\b(?:season|s)\s*\d+\b/gi,'').replace(f.category==='电视剧'&&seasonOf(f.title,f.category)!==undefined?/([1-9])$/:/$^/,'');
+ return normalize(base(a))===normalize(base(b))&&!!a.year&&a.year===b.year&&a.category===b.category;
 }
 export function matchEpisode(current:Episode,candidates:Episode[]):Episode|undefined{
- const compatible=candidates.filter(e=>e.season===current.season);
+ const compatible=candidates.filter(e=>e.season===current.season&&e.part===current.part);
  return compatible.find(e=>e.key===current.key)||compatible.find(e=>current.number!==undefined&&e.number===current.number)||compatible.find(e=>e.label.trim()===current.label.trim());
 }
 export async function poolMap<T,R>(items:T[],limit:number,fn:(item:T)=>Promise<R>):Promise<R[]>{

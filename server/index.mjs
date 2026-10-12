@@ -23,7 +23,15 @@ const server=http.createServer(async(req,res)=>{
    await fs.writeFile('data/sources.json.tmp',JSON.stringify(next,null,2));await fs.rename('data/sources.json.tmp','data/sources.json');send(res,200,{sources:next});return;
   }
   if(req.method==='GET'&&url.pathname==='/api/search'){
-   const q=(url.searchParams.get('q')||'').slice(0,100);const rows=await searchAll(sources,q,controller.signal);send(res,200,{rows,ms:performance.now()-start});return;
+   const q=(url.searchParams.get('q')||'').slice(0,100);
+   if(url.searchParams.get('stream')==='1'){
+    res.writeHead(200,{'Content-Type':'application/x-ndjson; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.flushHeaders();
+    const write=data=>{if(!res.destroyed)res.write(JSON.stringify(data)+'\n')};
+    write({type:'start',total:sources.filter(s=>s.enabled&&(s.type!=='applecms'||q.trim())).length});
+    await searchAll(sources,q,controller.signal,row=>write({type:'source',row}));
+    write({type:'done',ms:performance.now()-start});res.end();return;
+   }
+   const rows=await searchAll(sources,q,controller.signal);send(res,200,{rows,ms:performance.now()-start});return;
   }
   if(req.method==='GET'&&url.pathname==='/api/detail'){
    const source=sources.find(s=>s.id===url.searchParams.get('source')&&s.enabled);if(!source)throw new Error('来源未启用');
