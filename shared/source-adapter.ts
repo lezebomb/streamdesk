@@ -37,7 +37,7 @@ export function createAppleCmsAdapter(fetchJson:CmsTransport):SourceAdapter {
    const params:Record<string,string>={ac:'videolist',pg:String(category==='推荐'?page:Math.floor((page-1)/ids.length)+1)};
    if(category!=='推荐')params.t=ids[(page-1+Math.max(0,Math.floor(filters.offset||0)))%ids.length];
    if(source.supportsYear&&filters.year&&/^\d{4}$/.test(filters.year)&&Number(filters.year)<=new Date().getFullYear())params.year=filters.year;
-   if(source.supportsYearRange&&filters.year==='更早')params.year=`1900-${new Date().getFullYear()-11}`;
+   if(source.supportsYearRange&&filters.year==='更早')params.year=`1900-${new Date().getFullYear()-10}`;
    const raw=await fetchJson(source,params,signal);
    const list=(raw.list||[]).filter(row=>!isAdultContent(String(row.type_name||''))).map(row=>({...cmsFilm(row,source.id),episodes:[],groups:undefined}));
    return {list,hasMore:page<(Number(raw.pagecount)||1)*(category==='推荐'?1:ids.length)};

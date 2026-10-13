@@ -1,10 +1,10 @@
 {
-  "at": "2026-10-13T01:07:37.652Z",
+  "at": "2026-10-13T01:27:07.963Z",
   "ok": true,
-  "version": "0.4.0",
+  "version": "0.4.1",
   "files": 162,
-  "clean": "D:\\tv\\artifacts\\clean-checkout-0.4.0-1791853655389",
-  "packaged": "D:\\tv\\artifacts\\clean-checkout-0.4.0-1791853655389\\artifacts\\streamdesk-0.4.0",
+  "clean": "D:\\tv\\artifacts\\clean-checkout-0.4.1-1791854826124",
+  "packaged": "D:\\tv\\artifacts\\clean-checkout-0.4.1-1791854826124\\artifacts\\streamdesk-0.4.1",
   "checks": [
     "clean checkout without research/raw provider reports",
     "all manifest files exist",

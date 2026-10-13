@@ -206,5 +206,8 @@
       "cause": "capture method and buffer limits; retained early result files",
       "sourceFailure": false
     }
-  ]
+  ],
+  "measuredVersion": "0.4.0",
+  "shippedVersion": "0.4.1",
+  "yearBoundaryCorrection": "More-earlier includes 2016 when explicit list ends at 2017"
 }

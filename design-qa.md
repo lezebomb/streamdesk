@@ -1,4 +1,4 @@
-# Design QA — StreamDesk 0.4.0
+# Design QA — StreamDesk 0.4.1
 
 final result: passed
 
@@ -43,3 +43,5 @@ Focused region inspection covered the readable header / chip labels, poster capt
 ## Implementation checklist
 
 Passed: mobile composition, desktop / tablet breakpoints, selected / loading / empty states, source fixtures hidden in consumer UI, keyboard focus and selected semantics, responsive scrolling, all core runtime checks. Preserve the local preview for the user.
+
+0.4.1 只修正“更早”的年份边界；视觉布局与上述 0.4.0 证据相同，边界由新增单元检查验证。final result: passed

@@ -9,7 +9,7 @@ export function filterFilms(films:Film[],filters:Filters,now=Date.now()):Film[]{
  for(const f of films){if(filters.category==='推荐'?!recentRelease(f,now):f.category!==filters.category)continue;
   if(filters.genre!=='全部'&&!f.genres?.includes(filters.genre))continue;
   if(filters.language!=='全部'&&!f.language?.includes(filters.language))continue;
-  if(filters.year!=='全部'&&(filters.year==='更早'?(!validYear(f.year,now)||Number(f.year)>=nowYear(now)-10):f.year!==filters.year))continue;
+  if(filters.year!=='全部'&&(filters.year==='更早'?(!validYear(f.year,now)||Number(f.year)>=nowYear(now)-9):f.year!==filters.year))continue;
   if(filters.sort==='score'&&!(f.doubanScore&&f.doubanScore>0))continue;
   const i=seen.findIndex(x=>sameFilm(x,f));if(i<0)seen.push(f);else if((f.doubanScore||0)>(seen[i].doubanScore||0))seen[i]={...seen[i],doubanScore:f.doubanScore};
  }
