@@ -150,7 +150,7 @@
     "performanceLints": 0,
     "actualOwnerPasswordLogin": true,
     "actualFavoriteAndHistoryWritten": true,
-    "physicalPhoneSync": "not tested"
+    "physicalPhoneSync": "verified on actual Mate 60 and existing signed-in owner Edge tab; details in mobile-0.5-summary.json"
   },
   "evidence": [
     "reports/runs/iteration-0.5",
@@ -162,7 +162,14 @@
   "limits": [
     "Metadata and Douban scores remain provider-supplied",
     "Catalog is a bounded scanned/indexed subset, not a complete global ranking",
-    "No new long soak in 0.5; 0.4 soak retained",
-    "No phone / TV / installed clients tested this round"
-  ]
+    "Initial desktop pass retained older soaks; phone follow-up adds Ruyi 10.08 minute sample",
+    "Real phone browser tested in follow-up; no receiver playback or installed native client tested"
+  ],
+  "mobileFollowup": {
+    "at": "2026-10-13T06:10:42.295Z",
+    "report": "reports/mobile-0.5.md",
+    "summary": "reports/mobile-0.5-summary.json",
+    "client": "Real phone browser, not APK",
+    "sustainedSeconds": 604.5485007
+  }
 }

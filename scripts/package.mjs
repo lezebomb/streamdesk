@@ -17,7 +17,7 @@ await fs.copyFile('node_modules/hls.js/LICENSE',path.join(stage,'LICENSES/hls.js
 if(process.env.INCLUDE_CLOUD_CONFIG==='1'){const {cloudConfig}=await import('../server/cloud-config.mjs');const config=await cloudConfig();if(config.configured)await fs.writeFile(path.join(stage,'data/cloud.json'),JSON.stringify({url:config.url,publishableKey:config.publishableKey},null,2))}
 await fs.mkdir(path.join(stage,'reports'));
 const summaries=(await fs.readdir('reports',{withFileTypes:true})).filter(x=>x.isFile()&&/\.(?:md|json)$/.test(x.name));
-const allowed=new Set(['performance.json','acceptance.json','reproducibility.json','coverage-summary.json','quality.json','abr.json','iteration-e2e.json','packaged-check.json','expansion-summary.json','enhancement-summary.json','packaging-summary.json','experience-summary.json','iteration-0.5-summary.json']);
+const allowed=new Set(['performance.json','acceptance.json','reproducibility.json','coverage-summary.json','quality.json','abr.json','iteration-e2e.json','packaged-check.json','expansion-summary.json','enhancement-summary.json','packaging-summary.json','experience-summary.json','iteration-0.5-summary.json','mobile-0.5-summary.json']);
 for(const f of summaries)if(f.name.endsWith('.md')||allowed.has(f.name))await fs.copyFile(path.join('reports',f.name),path.join(stage,'reports',f.name));
 // Local evidence is optional and separate. GitHub packaging never depends on ignored files.
 if(process.env.INCLUDE_EVIDENCE==='1')for(const dir of ['runs','evidence'])try{await fs.cp(path.join('reports',dir),path.join(stage,'reports',dir),{recursive:true})}catch(e){if(e.code!=='ENOENT')throw e}

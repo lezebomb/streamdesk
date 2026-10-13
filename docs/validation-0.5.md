@@ -8,4 +8,4 @@ Node 24，`npm ci`、`npm test`、`npm run build`；PORT=4188 启动 `node serve
 
 真实源原始成功 / 失败证据：reports/runs/iteration-0.5、iteration-0.5-index、ruyi-exact-0.5；候选失败：reports/evidence/sources-0.5.json；接口与缓存基线：reports/evidence/api-0.5.json。这些大文件留在本地，GitHub 只提交汇总与复现脚本。
 
-本轮复用上一版本 10 分钟及 0.3 的 30 分钟持续播放证据，没有重跑所有长时组合；如意仅完成三个核心短播放，不声称整集稳定。ABR、快进、失败恢复、进度保持的原有测试继续保留。手机 / 电视、native 安装及更新后续验证。
+初次桌面发布复用上一版本 10 分钟及 0.3 的 30 分钟记录。如意后续已在 Mate 60 浏览器实测 604.55 秒连续播放，同时核验手势、快进、换源、ABR 和真实双设备云同步，见 [手机复现](validation-mobile-0.5.md)及手机报告。未重跑所有长时组合，不声称整集或全片库稳定。电视出画、native 安装及更新后续验证。

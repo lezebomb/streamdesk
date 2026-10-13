@@ -6,8 +6,8 @@ Scope: existing production PWA, mobile visual layout and desktop responsiveness.
 
 ## Visual truth and evidence
 
-- User sketch: C:/Users/24981/AppData/Local/Temp/codex-clipboard-bf58cd3d-c1dd-4dc8-baea-94cde823c912.png, home / my information architecture.
-- User catalog reference: C:/Users/24981/AppData/Local/Temp/codex-clipboard-2bf5b6d5-6359-4d19-b727-319b4468f24b.png, 1005×2048 px.
+- User supplied sketch: home / my information architecture; original attachment retained locally.
+- User supplied catalog reference: 1005×2048 px; original attachment retained locally.
 - Initial catalog capture: reports/evidence/ui-0.4-mobile-filter-final.jpg, 376×813 px, before density correction. Source and this capture were opened together in one comparison input.
 - Revised catalog capture: reports/evidence/ui-0.4-mobile-filter-compact.jpg, 390×844 px; browser CSS viewport approximately 390×845, one-pixel rounding. Source normalized conceptually by 390/1005; the reference places the first poster at about 297 CSS px, revised implementation at about 300 CSS px. Same state: 剧集, four filter rows, all values, three poster columns. Sort controls follow the user's newer 最新 / 高分 instruction.
 - Desktop: reports/evidence/ui-0.4-desktop-final.jpg, 1295×899 px; reports/evidence/ui-0.4-my-desktop.jpg, 1309×909 px. Requested desktop surface 1440×1000; existing browser zoom / ratio 1.1 yields a CSS viewport around 1309×909. Compare content proportions rather than raw pixel equality. Browser zoom was not changed.
@@ -48,4 +48,8 @@ Passed: mobile composition, desktop / tablet breakpoints, selected / loading / e
 
 ## 0.5.0 focused regression
 
-Existing visual layout preserved. Selected bottom navigation now uses a solid teal background, white icon / text and stronger weight on both viewport sizes. Multi-select genre chips retain selected states and toggle off. Loading rows append stable cards; 48 default category cards, 18 recommendation cards. Reports/runs/iteration-0.5-index captures desktop filters / search and mobile-width My. Native keyboard controls passed during real source playback; cloud owner login / writes independently verified. Physical phone and TV remain pending.
+Existing visual layout preserved. Selected bottom navigation now uses a solid teal background, white icon / text and stronger weight on both viewport sizes. Multi-select genre chips retain selected states and toggle off. Loading rows append stable cards; 48 default category cards, 18 recommendation cards. Reports/runs/iteration-0.5-index captures desktop filters / search and mobile-width My. Native keyboard controls passed during real source playback; cloud owner login / writes independently verified. Phone follow-up is recorded below; receiver playback remains pending.
+
+## Mate 60 follow-up, 2026-10-13
+
+Real Huawei Browser 17 / Chromium 132, 375 CSS px: three-column catalog with 48 results, no horizontal page overflow, no visible filter scrollbars, correct current-year labels, multi-select genre intersection / toggle and solid selected navigation passed. Actual requested-season and anime-alias search showed spinner / status. Actual mobile double tap, right hold / release / cancel, and application container fullscreen gestures passed. User desktop favorites arrived on phone; phone history appeared in the existing logged-in Edge tab. New sustained Ruyi anime sample: 604.55 seconds, no stalls / drops. Earlier TV post-seek waiting and first ABR timeout stay documented; this does not imply every playback path was flawless. See reports/mobile-0.5.md and docs/validation-mobile-0.5.md. No new UI design, APK, system changes or TV playback claim.

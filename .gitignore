@@ -37,3 +37,4 @@ reports/*.json
 !reports/packaging-summary.json
 !reports/experience-summary.json
 !reports/iteration-0.5-summary.json
+!reports/mobile-0.5-summary.json
