@@ -40,3 +40,9 @@
 .ph-play:before {
   content: "\e3d0";
 }
+.ph-pause:before {
+  content: "\e39e";
+}
+.ph-arrows-out:before {
+  content: "\e0a2";
+}

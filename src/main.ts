@@ -10,6 +10,7 @@ import {candidateScore,candidateKey,uniqueCandidates,mediaDomain,type Candidate}
 import {shell,icon} from './view';
 import {filterFilms,selectedGenres,type Filters} from '../shared/discovery';
 import {bindVideoGestures} from './gestures';
+import {bindPosters,posterMarkup} from './posters';
 import {bindVideoKeyboard} from './keyboard';
 import {appendFilms} from '../shared/result-list';
 import {downloads,saveDownload,removeDownload} from './downloads';
@@ -31,12 +32,13 @@ $('#app').innerHTML=shell();
 installAbortCompatibility();
 try{await installNativeTransport()}catch{ $('#search-status').textContent='本机接口启动失败，请重新打开应用';throw Error('Native transport startup failed') }
 bindClientUpdates();
+const posters=bindPosters($('.app-shell'));
 let toastTimer:ReturnType<typeof setTimeout>;function toast(s:string){$('#toast').textContent=s;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,4000)}
 async function api(url:string,options:RequestInit={}){const r=await fetch(url,{...options,signal:options.signal||AbortSignal.timeout(20000)});const d=await r.json();if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);return d}
 function updateHealth(id:string,event:Parameters<typeof observe>[1]){store.health[id]=observe(store.health[id]||blankHealth(),event);store.save();renderSources()}
 function visibleLibraryFilm(f:Film){return sources.some(s=>s.enabled&&s.type==='catalog')||(!f.sourceId.startsWith('open-')&&f.category!=='测试流')}
 function renderSources(){ $('#fav-count').textContent=String(store.favorites.filter(visibleLibraryFilm).length);renderRecent() }
-function card(f:Film,index:number,library=false){const h=store.history.find(x=>store.matches(x.film,f)),r=displayRating(f);return `<button class="film-card" data-film="${index}" data-library="${library}"><div class="poster">${f.poster?`<img src="${esc(f.poster)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:''}${f.remarks?`<span class="poster-tag">${esc(f.remarks)}</span>`:''}${r?`<span class="poster-score" title="${esc(r.label)}" aria-label="${esc(r.label)} ${r.score.toFixed(1)}">${r.score.toFixed(1)}</span>`:''}</div><div class="card-info"><strong>${esc(f.title)}</strong><small>${esc(validYear(f.year)||'年份待核实')}${h?` · 看到 ${Math.floor(h.position/60)}:${String(Math.floor(h.position%60)).padStart(2,'0')}`:''}</small></div></button>`}
+function card(f:Film,index:number,library=false){const h=store.history.find(x=>store.matches(x.film,f)),r=displayRating(f);return `<button class="film-card" data-film="${index}" data-library="${library}"><div class="poster">${posterMarkup(f,index<2)}${f.remarks?`<span class="poster-tag">${esc(f.remarks)}</span>`:''}${r?`<span class="poster-score" title="${esc(r.label)}" aria-label="${esc(r.label)} ${r.score.toFixed(1)}">${r.score.toFixed(1)}</span>`:''}</div><div class="card-info"><strong>${esc(f.title)}</strong><small>${esc(validYear(f.year)||'年份待核实')}${h?` · 看到 ${Math.floor(h.position/60)}:${String(Math.floor(h.position%60)).padStart(2,'0')}`:''}</small></div></button>`}
 let activeQuery='';
 let browseCursors:Record<string,number>={};
 let browsePage=0,browseHasMore=true,browseBusy=false,isSearch=false,batchOffset=0,browseRun=0,browseController:AbortController|null=null;
@@ -44,7 +46,7 @@ let filters:Filters={category:'推荐',genre:[],language:'全部',year:'全部',
 let displayed:Film[]=[],resultLimit=48,renderTimer:ReturnType<typeof setTimeout>|undefined;
 function resetCards(){clearTimeout(renderTimer);renderTimer=undefined;displayed=[];resultLimit=48;ratingObserver.disconnect();$('#results').innerHTML=''}
 function scheduleResults(){if(!renderTimer)renderTimer=setTimeout(()=>{renderTimer=undefined;renderResults()},300)}
-function renderRecent(){const h=store.history.find(h=>visibleLibraryFilm(h.film));$('#recent-section').hidden=filters.category!=='推荐'||isSearch||!h;$('#recent').innerHTML=h?`<button id="resume-recent" class="recent-card">${h.film.poster?`<img src="${esc(h.film.poster)}" alt="" referrerpolicy="no-referrer">`:''}<span><strong>${esc(h.film.title)}</strong><small>${esc(historyEpisodeLabel(h))} · 看到 ${Math.floor(h.position/60)}:${String(Math.floor(h.position%60)).padStart(2,'0')}</small></span>${icon('play-circle')}</button>`:'';$('#resume-recent')?.addEventListener('click',()=>void openFilm(h!.film))}
+let recentKey="";function renderRecent(){const h=store.history.find(h=>visibleLibraryFilm(h.film));$('#recent-section').hidden=filters.category!=='推荐'||isSearch||!h;const key=h?[h.film.sourceId,h.film.id,h.film.title,h.film.year,h.film.season,h.film.poster].join('|'):'';if(key===recentKey&&$('#resume-recent')){const label=$('#recent small');label.textContent=historyEpisodeLabel(h!)+' · 看到 '+Math.floor(h!.position/60)+':'+String(Math.floor(h!.position%60)).padStart(2,'0');return}recentKey=key;$('#recent').innerHTML=h?`<button id="resume-recent" class="recent-card">${posterMarkup(h.film,true)}<span><strong>${esc(h.film.title)}</strong><small>${esc(historyEpisodeLabel(h))} · 看到 ${Math.floor(h.position/60)}:${String(Math.floor(h.position%60)).padStart(2,'0')}</small></span>${icon('play-circle')}</button>`:'';$('#resume-recent')?.addEventListener('click',()=>void openFilm(h!.film))}
 function renderFilters(){const year=new Date().getFullYear();const rows=[['类型','genre',['全部',...(catalogueGenres[filters.category]||[])]],['语言','language',['全部','国语','英语','日语','粤语','韩语','法语','德语','泰语','西班牙语','意大利语','俄语','印地语']],['年份','year',['全部',...Array.from({length:10},(_,i)=>String(year-i)),'更早']],['排序','sort',['latest','score']]] as const;$('#filters').hidden=filters.category==='推荐'||isSearch;$('#filters').innerHTML=rows.map(([label,key,values])=>'<div class="filter-row"><strong>'+label+':</strong><div class="filter-scroll">'+values.map(value=>{const active=key==='genre'?(value==='全部'?!selectedGenres(filters.genre).length:selectedGenres(filters.genre).includes(value)):filters[key]===value;return '<button data-filter="'+key+'" data-value="'+value+'" aria-pressed="'+active+'" class="'+(active?'active':'')+'">'+(value==='latest'?'最新':value==='score'?'高分':value)+'</button>'}).join('')+'</div></div>').join('')}
 function sourcePreference(id:string){const h=store.health[id]||blankHealth();return healthScore(h)+(h.playSamples?0:sources.find(s=>s.id===id)?.priority||0)}
 function renderResults(){
@@ -53,7 +55,7 @@ function renderResults(){
  const previous=displayed.length;displayed=appendFilms(displayed,target).slice(0,filters.category==='推荐'&&!isSearch?18:resultLimit);
  if(displayed.length){$('#results .empty')?.remove();$('#results').insertAdjacentHTML('beforeend',displayed.slice(previous).map((f,i)=>card(f,previous+i)).join(''))}
  else $('#results').innerHTML=(browseBusy||$('#search-form').getAttribute('aria-busy')==='true')?'<div class="empty loading-empty">'+icon('spinner-gap')+' 正在寻找影片…</div>':'<div class="empty">'+(isSearch?'暂时没有找到，试试简称或其他译名':'暂无符合筛选的影片，可继续加载或调整条件')+'</div>';
- $('#load-sentinel').hidden=isSearch||(!browseHasMore&&selected.length<=resultLimit);$('#load-more').textContent=browseBusy?'正在加载…':'加载更多';$<HTMLButtonElement>('#load-more').disabled=browseBusy;renderRecent();for(const el of document.querySelectorAll<HTMLElement>('#results .film-card'))ratingObserver.observe(el)
+ $('#load-sentinel').hidden=isSearch||(!browseHasMore&&selected.length<=resultLimit);$('#load-more').textContent=browseBusy?'正在加载…':'加载更多';$<HTMLButtonElement>('#load-more').disabled=browseBusy;renderRecent();for(const el of document.querySelectorAll<HTMLElement>('#results .film-card')){ratingObserver.observe(el);const img=el.querySelector<HTMLImageElement>('img[data-posters]');if(img)posters.update(img,displayed[Number(el.dataset.film)])}
 }
 let libraryFilms:Film[]=[];
 const ratingSeen=new Set<string>(),ratingQueue=new Map<string,Film>();let ratingTimer:ReturnType<typeof setTimeout>|undefined,ratingBusy=false;

@@ -8,7 +8,7 @@ function emit(state){updateState={version:app.getVersion(),...state};if(window&&
 function permitted(event){return window&&!window.isDestroyed()&&event.sender===window.webContents&&event.senderFrame===window.webContents.mainFrame&&event.senderFrame.url.startsWith('app://streamdesk/')}
 async function freePort(){const s=http.createServer();await new Promise((resolve,reject)=>s.listen(0,'127.0.0.1',resolve).on('error',reject));const port=s.address().port;await new Promise(r=>s.close(r));return port}
 async function check(){if(!app.isPackaged){emit({state:'unavailable',message:'开发运行不安装更新'});return updateState}if(['checking','downloading','ready'].includes(updateState.state))return updateState;emit({state:'checking'});try{await autoUpdater.checkForUpdates()}catch{emit({state:'unavailable',message:'暂时未获取到新的安装版本，当前版本可继续使用'})}return updateState}
-app.on('second-instance',()=>{window?.show();window?.focus()});
+app.on('second-instance',async()=>{try{const installed=JSON.parse(await fs.readFile(path.join(app.getAppPath(),'package.json'),'utf8'));if(installed.version!==app.getVersion()){backend?.kill();app.relaunch();app.quit();return}}catch{}window?.show();window?.focus()});
 app.whenReady().then(async()=>{
  const assets=app.getAppPath(),data=path.join(app.getPath('userData'),'data');await fs.mkdir(data,{recursive:true});
  try{await fs.access(path.join(data,'sources.json'))}catch{await fs.writeFile(path.join(data,'sources.json'),'[]')}
@@ -16,6 +16,10 @@ app.whenReady().then(async()=>{
  const env={...process.env,PORT:String(port),HOST:'127.0.0.1',STREAMDESK_DATA:data,STREAMDESK_DIST:path.join(assets,'dist')};for(const key of ['STREAMDESK_SOURCES','STREAMDESK_RESULT_CACHE','STREAMDESK_SECURITY'])delete env[key];
  backend=utilityProcess.fork(path.join(assets,'runtime/server.mjs'),[],{cwd:app.getPath('userData'),env,stdio:'pipe',serviceName:'StreamDesk local catalogue'});
  await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('本地服务启动超时')),10000);backend.stdout.on('data',b=>{if(b.toString().includes('StreamDesk production')){clearTimeout(timer);resolve()}});backend.once('exit',()=>{clearTimeout(timer);reject(Error('本地服务退出'))})});
+ // Verify the actual user directory before showing an apparently empty application.
+ const configured=JSON.parse(await fs.readFile(path.join(data,'sources.json'),'utf8'));
+ const sourceCheck=await net.fetch(base+'/api/sources',{signal:AbortSignal.timeout(6000)}).then(r=>r.json());
+ if(configured.some(s=>s.enabled&&s.type!=='catalog')&&!sourceCheck.sources?.some(s=>s.enabled))throw Error('本地服务没有读取到已保存的来源，请重新启动应用');
  protocol.handle('app',async request=>{try{const u=new URL(request.url);if(u.hostname!=='streamdesk')return new Response('',{status:403});const headers={};if(request.headers.get('content-type'))headers['Content-Type']=request.headers.get('content-type');let body;if(!['GET','HEAD'].includes(request.method)){body=await request.arrayBuffer();if(body.byteLength>512*1024)return new Response('',{status:413})}return await net.fetch(base+u.pathname+u.search,{method:request.method,headers,body,redirect:'error'})}catch{return new Response('本地服务暂时不可用',{status:503})}});
  window=new BrowserWindow({show:!process.env.STREAMDESK_TEST_HOME,width:1320,height:880,minWidth:800,minHeight:600,title:'StreamDesk',icon:path.join(assets,'public/icon-512.png'),webPreferences:{preload:path.join(assets,'desktop/preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true}});
  window.removeMenu();window.webContents.setWindowOpenHandler(()=>({action:'deny'}));window.webContents.on('will-navigate',(event,url)=>{if(!url.startsWith('app://streamdesk/'))event.preventDefault()});
