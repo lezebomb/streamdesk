@@ -2,6 +2,7 @@ import type {Film,Episode} from './model';
 import {seasonOf,episodeIdentity,playbackGroups} from './cms.ts';
 import {sameFilm,matchEpisode} from './policy.ts';
 export interface History {film:Film;episodeKey:string;position:number;at:number}
+export function historyEpisodeLabel(history:History):string {const saved=history.film.episodes.find(e=>e.key===history.episodeKey);if(saved)return saved.label;if(history.episodeKey==='feature')return '正片';if(history.episodeKey.startsWith('label:'))return history.episodeKey.slice(6);const number=history.episodeKey.match(/episode:(\d+)/)?.[1];return number?`${history.episodeKey.includes('edition:ova:')?'OVA ':history.episodeKey.includes('edition:special:')?'特别篇 ':''}第${number}集`:'继续观看'}
 export interface LibrarySnapshot {app:'StreamDesk';schema:1;exportedAt:string;favorites:Film[];history:History[]}
 export interface PersistencePort {read(key:string):Promise<string|null>;write(key:string,value:string):Promise<void>}
 export function filmIdentity(f:Film){return `${f.canonicalId||f.title}|${f.year||''}|${f.season??seasonOf(f.title,f.category)??''}|${f.canonicalId?'':f.category||''}|${/解说/.test(f.title)?'commentary':/预告/.test(f.title)?'trailer':'feature'}`}

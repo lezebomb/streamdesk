@@ -61,5 +61,16 @@
     "priority": 7,
     "supportsYear": true,
     "supportsYearRange": true
+  },
+  {
+    "id": "ruyi",
+    "name": "如意",
+    "type": "applecms",
+    "enabled": true,
+    "priority": 7,
+    "api": "https://cj.rycjapi.com/api.php/provide/vod/",
+    "documentation": "https://www.ryzy3.tv/help/",
+    "supportsYear": false,
+    "supportsYearRange": false
   }
 ]

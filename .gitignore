@@ -5,6 +5,8 @@ dist/
 research/
 artifacts/
 data/sources.json*
+data/catalog-results.json*
+data/cloud.json
 .env*
 !.env.example
 *.key
@@ -34,3 +36,4 @@ reports/*.json
 !reports/enhancement-summary.json
 !reports/packaging-summary.json
 !reports/experience-summary.json
+!reports/iteration-0.5-summary.json

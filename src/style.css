@@ -10,3 +10,7 @@
 :root{--muted:#64767b}.bottom-nav button{color:#64767b}.bottom-nav button.active{color:#246e79}.search input::placeholder{color:#64767b}.search button{color:#246e79}
 
 .filter-scroll button:focus-visible{outline-offset:-2px}
+.bottom-nav button{border-radius:12px;padding:8px 25px;color:#65767a}.bottom-nav button.active{color:#fff;background:#246e79;font-weight:650}.bottom-nav button.active .ph{color:#fff}.loading-empty .ph{display:inline-block;animation:search-spin 1s linear infinite;margin-right:8px}
+@media(max-width:640px){.bottom-nav button{padding:5px 26px;min-width:110px}.bottom-nav{padding-top:7px}}
+.my-heading>div{flex:1}.my-heading p{margin-top:6px}#account-status{margin:0 0 16px}#auth-form label{display:grid;gap:7px;font-size:14px;margin:15px 0}#auth-form input{border:1px solid var(--line);padding:11px 12px;border-radius:9px;min-width:0;width:100%}.auth-tabs{display:flex;gap:12px}.auth-tabs button{padding:8px 20px;border-radius:9px}.auth-tabs .active{background:var(--chip);font-weight:600}.auth-primary{display:block;background:#246e79;color:white;border-radius:9px;padding:12px;width:100%;margin-top:18px}#account-dialog{width:min(440px,92vw)}
+#password-form label{display:grid;gap:7px;margin:15px 0;font-size:14px}#password-form input{border:1px solid var(--line);padding:11px;border-radius:9px;width:100%;min-width:0}

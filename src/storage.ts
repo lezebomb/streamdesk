@@ -2,9 +2,13 @@ import type {Film,Episode,Health} from '../shared/model';
 import {librarySnapshot,parseLibrary,filmIdentity,libraryMatches,persistedFilm,type History} from '../shared/library';
 export type {History} from '../shared/library';
 function read<T>(key:string,fallback:T):T{try{return JSON.parse(localStorage.getItem(key)||'null')??fallback}catch{return fallback}}
+let accountId='';const listeners=new Set<()=>void>();
 export const store={
  favorites:read<Film[]>('sd:favorites',[]),history:read<History[]>('sd:history',[]),health:read<Record<string,Health>>('sd:health',{}),
- save(){try{const snapshot=this.export();localStorage.setItem('sd:library:v1',JSON.stringify(snapshot));localStorage.setItem('sd:favorites',JSON.stringify(snapshot.favorites));localStorage.setItem('sd:history',JSON.stringify(snapshot.history.slice(0,80)));localStorage.setItem('sd:health',JSON.stringify(this.health))}catch{/* Playback must survive quota / private-mode failures. */}},
+ save(notify=true){try{const snapshot=this.export();localStorage.setItem(accountId?'sd:account:'+accountId+':library':'sd:library:v1',JSON.stringify(snapshot));if(!accountId){localStorage.setItem('sd:favorites',JSON.stringify(snapshot.favorites));localStorage.setItem('sd:history',JSON.stringify(snapshot.history.slice(0,80)))}localStorage.setItem('sd:health',JSON.stringify(this.health))}catch{/* Playback must survive quota / private-mode failures. */}if(notify)for(const listener of listeners)listener()},
+ subscribe(listener:()=>void){listeners.add(listener);return ()=>listeners.delete(listener)},
+ account(id:string){if(accountId===id)return;this.save(false);const guest=this.export();accountId=id;const raw=read<unknown>(id?'sd:account:'+id+':library':'sd:library:v1',null);let snapshot;try{snapshot=raw?parseLibrary(raw):guest}catch{snapshot=guest}this.favorites=snapshot.favorites;this.history=snapshot.history;this.save(false)},
+ remote(snapshot:ReturnType<typeof librarySnapshot>){this.favorites=snapshot.favorites;this.history=snapshot.history;this.save(false)},
  export(){return librarySnapshot(this.favorites,this.history)},
  import(raw:unknown){const next=parseLibrary(raw);const serialized=JSON.stringify(next);localStorage.setItem('sd:library:before-import',JSON.stringify(this.export()));localStorage.setItem('sd:library:v1',serialized);this.favorites=next.favorites;this.history=next.history;this.save()},
  identity:filmIdentity,matches:libraryMatches,

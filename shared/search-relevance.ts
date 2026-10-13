@@ -11,7 +11,7 @@ export function searchTerms(q:string):string[]{
  if(aliases.some(x=>normalizedTitle(x)===normalizedTitle(q)))return ['我们不可能成为恋人'];
  const s=seasonQuery(q);if(!s)return [q];
  // Three actual public API queries at most. No fuzzy season rewrite in identity rules.
- return [...new Set([`${s.base}第${chinese(s.season)}季`,q,`${s.base}第${s.season}季`])].slice(0,3);
+ return [...new Set([`${s.base}第${chinese(s.season)}季`,s.base,q])].slice(0,3);
 }
 export function relevance(f:Pick<Film,'title'|'season'|'category'>,query:string):number{
  const terms=searchTerms(query),q=normalizedTitle(query),name=normalizedTitle(f.title),desired=seasonQuery(query),actual=seasonQuery(f.title);

@@ -10,3 +10,5 @@
 
 向他人分发或提供网络服务时，请保留相应许可证、署名和对应源码。第三方服务的内容和访问权限由其自身管理。
 - Phosphor Icons 2.1.2，https://github.com/phosphor-icons/web ，MIT。使用原始字形与图标定义；许可证见 LICENSES/phosphor-icons.txt。魔都与 ikun 为本轮新增外部公开 API 服务，其文档链接随来源配置保留。
+
+- Supabase JavaScript SDK 2.117.3，https://github.com/supabase/supabase-js ，MIT，许可证见 LICENSES/supabase-js.txt。如意为新增外部公开 API 服务，文档见来源配置；不复制其网站前端或破解受限媒体。

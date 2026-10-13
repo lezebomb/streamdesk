@@ -1,6 +1,7 @@
 import type {Film,Source} from './model';
 import {cmsFilm,categoryOf} from './cms.ts';
 import {searchTerms,relevance,normalizedTitle,seasonQuery} from './search-relevance.ts';
+import {selectedGenres} from './discovery.ts';
 import {parseSearchList,isAdultContent,isRelevant} from '../src/vendor/cms-parser.ts';
 
 export interface SourceAdapter {search(source:Source,query:string,signal:AbortSignal):Promise<Film[]>;detail(source:Source,id:string,signal:AbortSignal):Promise<Film|undefined>;browse?(source:Source,category:string,page:number,signal:AbortSignal,filters?:{genre?:string;language?:string;year?:string;offset?:number}):Promise<{list:Film[];hasMore:boolean}>}
@@ -21,7 +22,7 @@ export function createAppleCmsAdapter(fetchJson:CmsTransport):SourceAdapter {
      // Save the remaining request budget for alternate spellings if no result.
      if(!found.length&&terms.length>1)break;
     }
-    if(out.some(f=>relevance(f,query)>=1100)||requests>=3)break;
+     if(requests>=3)break;
    }
    return out.sort((a,b)=>relevance(b,query)-relevance(a,query));
   },
@@ -29,7 +30,7 @@ export function createAppleCmsAdapter(fetchJson:CmsTransport):SourceAdapter {
    const taxonomy=await fetchJson(source,{ac:'list'},signal);
    const classes=Array.isArray(taxonomy.class)?taxonomy.class as {type_id:number;type_pid:number;type_name:string}[]:[];
    let leaves=classes.filter(c=>categoryOf(c.type_name)===category&&!isAdultContent(c.type_name)&&!classes.some(child=>child.type_pid===c.type_id));
-   const subtype=filters.genre&&filters.genre!=='全部'?leaves.filter(c=>c.type_name.includes(filters.genre!)):[];if(subtype.length)leaves=subtype;
+   const genres=selectedGenres(filters.genre||'全部');const subtype=genres.length?leaves.filter(c=>c.type_name.includes(genres[0])):[];if(subtype.length)leaves=subtype;
    const languageTypes:Record<string,RegExp>={'日语':/日(?:本|韩)?(?:剧|动漫)|日韩/,'韩语':/韩(?:国)?(?:剧|动漫)|日韩/,'粤语':/香港|港台|港澳/,'英语':/欧美|美国|美剧/,'国语':/国产|大陆|中国|内地/,'泰语':/泰剧|马泰|泰国/};
    const languageTypesMatch=filters.language&&languageTypes[filters.language]?leaves.filter(c=>languageTypes[filters.language!].test(c.type_name)):[];if(languageTypesMatch.length)leaves=languageTypesMatch;
    const ids=leaves.map(c=>String(c.type_id));

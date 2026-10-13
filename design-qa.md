@@ -45,3 +45,7 @@ Focused region inspection covered the readable header / chip labels, poster capt
 Passed: mobile composition, desktop / tablet breakpoints, selected / loading / empty states, source fixtures hidden in consumer UI, keyboard focus and selected semantics, responsive scrolling, all core runtime checks. Preserve the local preview for the user.
 
 0.4.1 只修正“更早”的年份边界；视觉布局与上述 0.4.0 证据相同，边界由新增单元检查验证。final result: passed
+
+## 0.5.0 focused regression
+
+Existing visual layout preserved. Selected bottom navigation now uses a solid teal background, white icon / text and stronger weight on both viewport sizes. Multi-select genre chips retain selected states and toggle off. Loading rows append stable cards; 48 default category cards, 18 recommendation cards. Reports/runs/iteration-0.5-index captures desktop filters / search and mobile-width My. Native keyboard controls passed during real source playback; cloud owner login / writes independently verified. Physical phone and TV remain pending.
