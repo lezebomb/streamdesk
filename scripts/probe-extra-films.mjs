@@ -1,5 +1,0 @@
-import fs from 'node:fs/promises';
-import {adapters} from '../server/adapters.mjs';
-const source=JSON.parse(await fs.readFile('data/candidates.json','utf8'))[0],out=[];
-for(const query of ['南京照相馆','浪浪山小妖怪']){const t=performance.now();try{const list=await adapters.get('applecms').search(source,query,new AbortController().signal),hit=list.find(x=>x.title===query);const film=hit?await adapters.get('applecms').detail(source,hit.id,new AbortController().signal):null;const e=film?.episodes[0];let media=null;if(e){const start=performance.now(),r=await fetch(e.url,{signal:AbortSignal.timeout(10000),redirect:'error'});const text=await r.text();media={url:e.url,status:r.status,ms:performance.now()-start,hls:text.trim().startsWith('#EXTM3U'),body:text};}out.push({query,ms:performance.now()-t,list,film,media});console.log({query,id:film?.id,episodes:film?.episodes.length,url:e?.url,status:media?.status,hls:media?.hls})}catch(e){out.push({query,error:e.message})}}
-await fs.writeFile('research/extra-films.json',JSON.stringify(out,null,2));

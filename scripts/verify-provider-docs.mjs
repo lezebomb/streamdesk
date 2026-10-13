@@ -1,2 +1,0 @@
-import fs from 'node:fs/promises';
-const out=[];for(const url of ['https://lzizy.net/help','https://ffzy5.tv/help/']){try{const r=await fetch(url,{signal:AbortSignal.timeout(8000)}),body=await r.text();out.push({url,status:r.status,body});console.log(JSON.stringify({url,status:r.status,apiLinks:[...new Set([...body.matchAll(/https?:[^\s"<>']+api\.php[^\s"<>']*/g)].map(m=>m[0]))],json:body.match(/.{0,100}json.{0,170}/gi)?.slice(0,5)}))}catch(e){out.push({url,error:e.message})}}await fs.writeFile('research/provider-docs-verified.json',JSON.stringify(out,null,2));

@@ -1,3 +1,0 @@
-import fs from 'node:fs/promises';
-import {mobileCDP} from './mobile-cdp.mjs';
-const c=await mobileCDP();try{const result=await c.evaluate(`({status:document.querySelector('#play-status').textContent,current:window.streamdesk.current?.sourceId,episode:window.streamdesk.episode,metrics:window.streamdesk.metrics,quality:window.streamdesk.player.qualityState(),capabilities:{mse:!!window.MediaSource,mediaSourceManaged:!!window.ManagedMediaSource,canHls:document.querySelector('video').canPlayType('application/vnd.apple.mpegurl')},phase:document.querySelector('#mobile-phase').textContent})`);await fs.writeFile('reports/runs/mobile-mate60/inspect.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result));}finally{c.close()}

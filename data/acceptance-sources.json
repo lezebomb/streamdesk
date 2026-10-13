@@ -1,7 +1,0 @@
-[
- {"id":"baofeng","name":"暴风 · 测试候选","type":"applecms","enabled":true,"api":"https://bfzyapi.com/api.php/provide/vod/"},
- {"id":"liangzi","name":"量子 · 测试候选","type":"applecms","enabled":true,"api":"https://cj.lziapi.com/api.php/provide/vod/"},
- {"id":"feifan","name":"非凡 · 测试候选","type":"applecms","enabled":true,"api":"http://api.ffzyapi.com/api.php/provide/vod/"},
- {"id":"guangsu","name":"光速 · 测试候选","type":"applecms","enabled":true,"api":"https://api.guangsuapi.com/api.php/provide/vod/"},
- {"id":"wujin","name":"无尽 · 测试候选","type":"applecms","enabled":true,"api":"https://api.wujinapi.me/api.php/provide/vod/from/wjm3u8/"}
-]

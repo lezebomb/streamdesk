@@ -1,8 +1,0 @@
-import fs from 'node:fs/promises';
-import {execFileSync} from 'node:child_process';
-import {mobileCDP} from './mobile-cdp.mjs';
-const dir='reports/evidence/mobile-physical-visual';await fs.mkdir(dir,{recursive:true});const c=await mobileCDP();
-try{await c.evaluate(`(async()=>{const p=window.streamdesk.player;p.enhancement.setMode('balanced');p.video.muted=true;await window.streamdesk.open(window.streamdesk.current);document.querySelector('.video-wrap').scrollIntoView({behavior:'instant',block:'center'});await p.video.play();return true})()`);for(let i=0;i<100;i++){if(await c.evaluate('window.streamdesk.player.enhancement.snapshot().frames>10'))break;await new Promise(r=>setTimeout(r,200))}
-const frame=await c.evaluate(`(()=>{const p=window.streamdesk.player;p.video.pause();return {time:p.video.currentTime,enhancement:p.enhancement.snapshot(),rect:document.querySelector('.video-wrap').getBoundingClientRect().toJSON(),native:[p.video.videoWidth,p.video.videoHeight]}})()`);
-await fs.writeFile(dir+'/on.png',execFileSync('adb',['exec-out','screencap','-p'],{maxBuffer:10485760}));await c.evaluate(`window.streamdesk.player.enhancement.setMode('off');true`);await new Promise(r=>setTimeout(r,100));await fs.writeFile(dir+'/off.png',execFileSync('adb',['exec-out','screencap','-p'],{maxBuffer:10485760}));await fs.writeFile(dir+'/result.json',JSON.stringify({at:new Date().toISOString(),frame,timeAfter:await c.evaluate('window.streamdesk.player.video.currentTime'),scope:'ADB physical screen, same paused frame; prior CDP offscreen canvas screenshots were invalid'},null,2));console.log(JSON.stringify(frame));
-}finally{await c.evaluate(`window.streamdesk.player.stop();window.streamdesk.player.enhancement.setMode('off');true`).catch(()=>{});c.close()}

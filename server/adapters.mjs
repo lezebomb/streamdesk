@@ -5,6 +5,7 @@ import {createAppleCmsAdapter} from '../shared/source-adapter.ts';
 import {cacheCmsTransport} from '../shared/source-cache.ts';
 import { catalog } from './catalog.mjs';
 import {searchSources} from '../shared/source-search.ts';
+import {networkSlot} from './network-pool.mjs';
 export async function readSources(){
  const configured=process.env.STREAMDESK_SOURCES;if(configured)return validateSources(JSON.parse(await fs.readFile(configured,'utf8')));
  const defaults=validateSources(JSON.parse(await fs.readFile('data/sources.example.json','utf8')));let saved=[];try{saved=validateSources(JSON.parse(await fs.readFile('data/sources.json','utf8')))}catch(e){if(e.code!=='ENOENT')throw e}
@@ -28,11 +29,10 @@ function blocked(ip){
  // Restrict to global IPv6 2000::/3; reject mapped IPv4 and local ranges.
  return !/^[23][0-9a-f]{3}:/i.test(ip)||/^2001:db8:/i.test(ip);
 }
-// This machine's VPN returns paired 198.18/15 + fdfe:dcba:9876 virtual DNS addresses.
-// Exception is limited to these verified provider hostnames, these exact virtual ranges,
-// and configured API calls. Other private hosts/IPs and all redirects remain blocked.
-const proxyDnsHosts=new Set(['bfzyapi.com','cj.lziapi.com','api.ffzyapi.com','api.guangsuapi.com','api.wujinapi.me','www.hongniuzy2.com','subocj.com','www.mdzyapi.com','ikunzyapi.com','cj.rycjapi.com']);
-function permittedVirtual(host,ip){return proxyDnsHosts.has(host)&&(/^(198\.1[89]\.)/.test(ip)||/^fdfe:dcba:9876:/i.test(ip));}
+// Optional owner-maintained virtual DNS exceptions stay in ignored local configuration.
+// All other private/loopback targets and cross-origin redirects remain blocked.
+let dnsExceptions={proxyDnsHosts:[],virtualIpv6Prefix:''};try{dnsExceptions=JSON.parse(await fs.readFile(process.env.STREAMDESK_SECURITY||'data/security.json','utf8'))}catch(e){if(e.code!=='ENOENT')throw e}
+function permittedVirtual(host,ip){return dnsExceptions.proxyDnsHosts?.includes(host)&&(/^(198\.1[89]\.)/.test(ip)||dnsExceptions.virtualIpv6Prefix&&ip.toLowerCase().startsWith(dnsExceptions.virtualIpv6Prefix.toLowerCase()));}
 export async function publicTarget(url){const u=new URL(url);if(!['https:','http:'].includes(u.protocol)||u.username||u.password)throw new Error('只接受公开 HTTP(S)');let timer;const answers=await Promise.race([dns.lookup(u.hostname.replace(/^\[|\]$/g,''),{all:true}),new Promise((_,reject)=>timer=setTimeout(()=>reject(new Error('DNS 超时')),3000))]).finally(()=>clearTimeout(timer));if(!answers.length||answers.some(a=>blocked(a.address)&&!permittedVirtual(u.hostname,a.address)))throw new Error('不允许请求内网或保留地址');return u;}
 // Only requests to administrator-configured API origins, no arbitrary proxy or rewritten headers.
 async function cmsFetch(source,params,signal){
@@ -42,7 +42,7 @@ async function cmsFetch(source,params,signal){
  const chunks=[];let bytes=0;for await(const chunk of r.body){bytes+=chunk.byteLength;if(bytes>2*1024*1024)throw new Error('API 响应过大');chunks.push(Buffer.from(chunk))}
  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
-const cmsCache=cacheCmsTransport(cmsFetch);
+const cmsCache=cacheCmsTransport((source,params,signal)=>networkSlot(()=>cmsFetch(source,params,signal),signal));
 export function clearCache(){cmsCache.clear()}
 export const adapters=new Map([
  ['catalog',{search:async(s,q)=>catalog(s).filter(f=>!q||f.title.toLowerCase().includes(q.toLowerCase())),detail:async(s,id)=>catalog(s).find(f=>f.id===id)}],
