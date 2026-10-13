@@ -18,7 +18,7 @@ win:
   target:
     - target: nsis
       arch: [x64]
-  icon: public/icon-512.png
+  icon: public/icon.ico
   signExecutable: false
 nsis:
   include: desktop/installer.nsh

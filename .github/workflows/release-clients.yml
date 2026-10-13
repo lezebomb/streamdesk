@@ -2,7 +2,7 @@ name: Build Windows release
 on:
   push:
     branches: [main]
-    paths: [package.json]
+    paths: [package.json, electron-builder.yml, public/icon.ico]
   workflow_dispatch:
 permissions:
   contents: write
