@@ -1,0 +1,13 @@
+plugins { id 'com.android.application' }
+android {
+ namespace 'com.lezebomb.streamdesk'
+ compileSdk 36
+ def packageInfo = new groovy.json.JsonSlurper().parse(file('../../package.json'))
+ def versions = packageInfo.version.split('\\.').collect { it as int }
+ defaultConfig { applicationId 'com.lezebomb.streamdesk'; minSdk 28; targetSdk 35; versionCode versions[0]*1000000+versions[1]*1000+versions[2]; versionName packageInfo.version }
+ buildFeatures { buildConfig true }
+ signingConfigs { personal { storeFile file(System.getenv('STREAMDESK_ANDROID_KEYSTORE') ?: '../../data/signing/streamdesk.p12'); storePassword file(System.getenv('STREAMDESK_ANDROID_PASSWORD_FILE') ?: '../../.tooling/signing.password').text.trim(); keyAlias 'streamdesk'; keyPassword storePassword } }
+ buildTypes { debug { signingConfig signingConfigs.personal; debuggable true }; release { signingConfig signingConfigs.personal; minifyEnabled false; debuggable false } }
+ compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
+dependencies { implementation 'androidx.webkit:webkit:1.17.1'; implementation 'androidx.core:core:1.17.0' }

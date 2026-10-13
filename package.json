@@ -1,6 +1,6 @@
 {
   "name": "streamdesk-personal",
-  "version": "0.6.0",
+  "version": "0.6.3",
   "private": true,
   "type": "module",
   "license": "AGPL-3.0-or-later",
@@ -15,30 +15,39 @@
     "bench:network": "node scripts/bench-network.mjs",
     "bench:playback": "node scripts/bench-playback.mjs",
     "test:e2e": "node scripts/e2e.mjs",
-    "report": "node scripts/report.mjs",
     "test:smoke": "node scripts/ci-smoke.mjs",
     "test:iteration": "node scripts/iteration-e2e.mjs",
     "test:quality": "node scripts/quality.mjs",
     "acceptance:search": "node scripts/acceptance-search.mjs",
     "acceptance:playback": "node scripts/acceptance-playback.mjs",
-    "acceptance:soak": "node scripts/soak.mjs",
     "package:pwa": "node scripts/package.mjs",
     "test:enhancement": "node scripts/enhancement-smoke.mjs",
     "bench:enhancement": "node scripts/enhancement-benchmark.mjs",
     "test:package": "node scripts/package-smoke.mjs",
     "test:experience": "node scripts/experience.mjs",
-    "test:iteration-0.5": "node scripts/iteration-0.5.mjs"
+    "desktop:dev": "electron .",
+    "desktop:build": "node scripts/build-desktop.mjs",
+    "android:prepare": "node scripts/prepare-android.mjs"
   },
   "dependencies": {
     "@phosphor-icons/web": "^2.1.2",
     "@supabase/supabase-js": "2.117.3",
+    "electron-updater": "6.8.9",
     "hls.js": "1.7.3",
     "linkedom": "0.18.13"
   },
   "devDependencies": {
     "@playwright/test": "1.64.0",
     "@types/node": "26.6.5",
+    "electron": "44.7.0",
+    "electron-builder": "26.15.3",
     "typescript": "7.0.2",
     "vite": "8.3.4"
-  }
+  },
+  "overrides": {
+    "@electron/get": "5.1.0"
+  },
+  "main": "desktop/main.cjs",
+  "description": "Personal film library and streaming player",
+  "author": "lezebomb"
 }

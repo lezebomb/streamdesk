@@ -1,5 +1,8 @@
 import {relevance} from '../shared/search-relevance';
 import {validYear} from '../shared/metadata';
+import {bindClientUpdates} from './client-updates';
+import {installNativeTransport} from './native-transport';
+import {installAbortCompatibility} from '../shared/abort';
 import {catalogueGenres} from '../shared/catalogue-policy';
 import {displayRating,verifiedRating} from '../shared/ratings';
 import {probeMedia} from '../shared/media-probe';
@@ -25,6 +28,9 @@ const attempted=new Set<string>();let attemptLogged=false;let switches=0;
 let lastHistorySave=0;
 function mediaHealthKey(f:Film,e:Episode){try{return `${f.sourceId}|${new URL(e.url).hostname}`}catch{return f.sourceId}}
 $('#app').innerHTML=shell();
+installAbortCompatibility();
+try{await installNativeTransport()}catch{ $('#search-status').textContent='本机接口启动失败，请重新打开应用';throw Error('Native transport startup failed') }
+bindClientUpdates();
 let toastTimer:ReturnType<typeof setTimeout>;function toast(s:string){$('#toast').textContent=s;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,4000)}
 async function api(url:string,options:RequestInit={}){const r=await fetch(url,{...options,signal:options.signal||AbortSignal.timeout(20000)});const d=await r.json();if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);return d}
 function updateHealth(id:string,event:Parameters<typeof observe>[1]){store.health[id]=observe(store.health[id]||blankHealth(),event);store.save();renderSources()}
@@ -141,7 +147,7 @@ $('#export-data').onclick=()=>download('streamdesk-library.json',store.export())
 $('#import-data').onclick=()=>$('#import-file').click();
 $<HTMLInputElement>('#import-file').onchange=async e=>{const input=e.target as HTMLInputElement,file=input.files?.[0];if(!file)return;try{if(file.size>8*1024*1024)throw new Error('备份超过 8 MiB');store.import(JSON.parse(await file.text()));renderSources();if(['favorites','history'].includes(view))navigate(view);toast('已恢复收藏与历史')}catch(error){toast('导入失败，原记录保留：'+String(error))}finally{input.value=''}};
 window.addEventListener('pagehide',()=>{searchController?.abort();linesController?.abort();if(current&&episode?.kind!=='embed'&&episode)store.remember(current,episode.key,player.resumePosition(),episode);finishAttempt(true)});
-if('serviceWorker'in navigator&&!import.meta.env.DEV)navigator.serviceWorker.register('/sw.js').catch(()=>toast('离线外壳注册失败'));
+if('serviceWorker'in navigator&&!import.meta.env.DEV&&location.protocol!=='app:'&&!window.streamdeskClient)navigator.serviceWorker.register('/sw.js').catch(()=>toast('离线外壳注册失败'));
 // Test harness uses the real application path and media element; no simulated playback success.
 Object.assign(window,{streamdesk:{open:openFilm,player,get searchProgress(){return searchProgress},get current(){return current},get episode(){return episode},get candidates(){return candidates},get metrics(){return player.snapshot()},get sources(){return sources},get displayed(){return displayed},get filters(){return filters}}});
 
@@ -167,3 +173,5 @@ async function openDownloaded(index:number){const d=downloads()[index];if(!d)ret
 void import('./account').then(({bindAccount})=>bindAccount(()=>{renderSources();if(['history','favorites','my'].includes(view))navigate(view)}));
 
 try{const config=await api('/api/sources');sources=config.sources;renderSources();if(sources.some(s=>s.enabled&&s.type==='applecms'))await browse(true);else await search()}catch(e){$('#search-status').textContent=String(e)}
+
+

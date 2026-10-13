@@ -8,8 +8,9 @@ import {discoverRenderers,castEpisode,rendererAction} from './casting.mjs';
 import {resultCache} from './result-cache.mjs';
 import {cloudConfig} from './cloud-config.mjs';
 import {catalogueService} from './catalogue-service.mjs';
-const catalogue=catalogueService();
-const results=resultCache(process.env.STREAMDESK_RESULT_CACHE||'data/catalog-results.json');
+const dataRoot=process.env.STREAMDESK_DATA||'data';
+const catalogue=catalogueService({indexFile:path.join(dataRoot,'catalogue-index.json'),metadataFile:path.join(dataRoot,'metadata-catalogue.json')});
+const results=resultCache(process.env.STREAMDESK_RESULT_CACHE||path.join(dataRoot,'catalog-results.json'));
 const port=Number(process.env.PORT||4173),host=process.env.HOST||'127.0.0.1';
 if(!['127.0.0.1','::1'].includes(host))throw Error('StreamDesk 个人服务只允许绑定回环地址');
 const ratingChecks=new Map();
@@ -73,7 +74,7 @@ const server=http.createServer(async(req,res)=>{
   send(res,404,{error:'接口不存在'});return;
  }
  if(vite){vite.middlewares(req,res);return;}
- let filename=path.resolve('dist','.'+decodeURIComponent(url.pathname));const root=path.resolve('dist');if(!filename.startsWith(root+path.sep)&&filename!==root)throw new Error('路径无效');
+ const root=path.resolve(process.env.STREAMDESK_DIST||'dist');let filename=path.resolve(root,'.'+decodeURIComponent(url.pathname));if(!filename.startsWith(root+path.sep)&&filename!==root)throw new Error('路径无效');
  try{if((await fs.stat(filename)).isDirectory())filename=path.join(filename,'index.html')}catch{filename=path.join(root,'index.html')}
  const file=await fs.readFile(filename);res.writeHead(200,{'Content-Type':mime[path.extname(filename)]||'application/octet-stream','Cache-Control':path.basename(filename)==='sw.js'?'no-cache':'public,max-age=0'});res.end(file);
  }catch(e){if(!res.headersSent)send(res,400,{error:e.message});else res.destroy();}

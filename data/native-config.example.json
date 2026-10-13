@@ -1,6 +1,6 @@
 {
  "schema":1,
- "status":"planning-only-not-built",
+ "status":"native-clients-built-update-delivery-not-fully-verified",
  "windows":{"appId":"com.lezebomb.streamdesk","productName":"StreamDesk","target":"nsis","updater":"electron-updater"},
- "android":{"applicationId":"com.lezebomb.streamdesk","versionName":"0.2.0","versionCode":2,"minSdk":26,"keystoreEnvironment":"STREAMDESK_ANDROID_KEYSTORE"}
+ "android":{"applicationId":"com.lezebomb.streamdesk","versionName":"from-package-json","versionCodeFormula":"major*1000000+minor*1000+patch","minSdk":28,"keystoreEnvironment":"STREAMDESK_ANDROID_KEYSTORE"}
 }

@@ -7,6 +7,8 @@
 - Phosphor Icons，https://github.com/phosphor-icons/web ，MIT，许可证见 LICENSES/phosphor-icons.txt。
 - Supabase JavaScript SDK，https://github.com/supabase/supabase-js ，MIT，许可证见 LICENSES/supabase-js.txt。
 - LinkeDOM，https://github.com/WebReflection/linkedom ，ISC，用于解析正常公开 HTML。打包时保留其及解析依赖的独立许可证，见 LICENSES/。
+- Electron 与 electron-updater，MIT；许可证见 LICENSES/electron.txt、electron-updater.txt。Electron 的 Chromium 等依赖许可证随二进制发行保留。
+- AndroidX WebKit 与 Core，Apache-2.0；许可证见 LICENSES/Apache-2.0.txt。
 - Big Buck Bunny、Sintel、Tears of Steel 是 Blender Foundation 开放电影，仅用于显式选择的测试夹具，媒体不打包进应用。
 - LunaTV 与 FongMi/TV 仅用于架构研究，没有复制代码。
 

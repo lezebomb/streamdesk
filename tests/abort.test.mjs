@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {combineSignals} from '../shared/abort.ts';
+test('old WebView abort composition propagates existing and future reasons without cancelling siblings',()=>{const a=new AbortController(),b=new AbortController();const composed=combineSignals([a.signal,b.signal]);b.abort(Error('timeout'));assert.equal(composed.reason.message,'timeout');assert.equal(a.signal.aborted,false);assert.equal(combineSignals([b.signal,a.signal]).reason.message,'timeout');assert.equal(combineSignals([]).aborted,false)});

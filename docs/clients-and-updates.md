@@ -1,42 +1,39 @@
-# 双平台与更新实施方案
+# 客户端构建与更新
 
-本阶段交付 PWA 与共享模块。Windows 安装器、Android APK、签名更新和 Media3 桥接尚未实现，也没有 Android 实机测试。
+Windows 使用 Electron + NSIS，Android 使用 AndroidX WebKit + Java 本机网络桥接。两者复用来源适配器、标题与季数匹配、筛选、hls.js、播放策略和版本化收藏/历史。Android 不运行 Node，也不通过电脑转发 API 才能播放。Capacitor 和 Media3 尚未接入。
 
-## 共用代码与边界
+## Windows
 
-`shared/source-adapter.ts` 的 Apple CMS 适配器已经由 Node 服务实际使用。`shared/cms.ts`、`policy.ts`、`source-search.ts`、`search.ts`、`playback-policy.ts`、`library.ts` 负责分组、身份匹配、逐源结果、恢复/缓冲策略和版本化备份；没有 Node 运行时依赖。`shared/platform.ts` 定义来源、持久化与播放器接口。
+Node.js 24 环境执行 `npm ci`、`npm run build`、`npm run desktop:build`，产物为 `artifacts/windows/StreamDesk-Setup-X.Y.Z.exe`、blockmap 和 latest.yml。构建缓存位于工作区 .tooling。安装器为当前用户安装，用户数据与安装目录分开。
 
-当前 `server/` 仍依赖 Node 的文件、DNS 与 HTTP 模块。Capacitor/WebView 不能直接运行它。Android 不能通过打包网页、ADB 转发或连接电脑来宣称独立运行。
+渲染进程使用稳定 app://streamdesk 原点、contextIsolation/sandbox、禁用 nodeIntegration，API 请求只转发至应用自己的回环 Node 进程。私人 JSON 在 Electron userData/data 内；公开包不包含来源或云项目配置。现有 PWA 数据需通过“我的”备份/导入迁移，浏览器登录会话不会自动复制。
 
-## Windows：Electron
+目前 Windows 安装器未做 Authenticode 签名；HTTPS 与更新清单 SHA512 校验不能替代发行者代码签名。请保留这一限制，不宣称已具备签名验证。
 
-将现有 PWA 放入 Electron，主进程提供来源 HTTP、DNS 校验、本地 JSON 配置和文件备份。渲染进程保持 hls.js；用受限 IPC 注入来源与持久化接口，关闭 nodeIntegration、启用 contextIsolation/sandbox。采用稳定 `app://streamdesk` 原点，避免随机 localhost 端口导致 localStorage 换原点丢数据。
+## Android
 
-应用标识固定 `com.lezebomb.streamdesk`，显示名固定 StreamDesk，用户数据目录使用 Electron `userData`，与安装目录分离。安装包方案为 electron-builder NSIS + electron-updater；不能把 Electron 内置 Squirrel autoUpdater 直接当成 NSIS 更新器。
+需要 JDK 21、Android SDK 36/build-tools 36、Gradle 9.3.1，设置 JAVA_HOME、ANDROID_HOME、GRADLE_USER_HOME 后执行：
 
-## Android：Capacitor + 原生网络/可选 Media3
+```powershell
+npm ci
+npm run build
+node scripts/init-android-signing.mjs
+npm run android:prepare
+gradle -p android assembleRelease --no-daemon
+```
 
-使用相同前端和共享 Apple CMS 适配器，通过原生 HTTP 传输实现 `CmsTransport`，通过 Preferences/原子文件提供 `PersistencePort`。来源配置存储于 app 私有目录。原生传输必须保留来源白名单、大小限制、取消、超时和并发限制。
+签名脚本首次创建 data/signing/streamdesk.p12 和 .tooling/signing.password，之后保留现有身份；丢失密码应恢复备份，不能换密钥冒充更新。两个文件必须离线备份且不提交。可用 STREAMDESK_ANDROID_KEYSTORE 和 STREAMDESK_ANDROID_PASSWORD_FILE 指定文件路径。固定包名 com.lezebomb.streamdesk，最低 Android 9；versionCode = major × 1000000 + minor × 1000 + patch。minor/patch 应小于 1000，新版必须递增。
 
-[CapacitorHttp](https://capacitorjs.com/docs/apis/http) 可处理 API 请求。它不能自动解决 hls.js 片段 XHR、WebView 解码器或跨域媒体兼容性；需要分别实测。对于不能可靠播放的设备，接入 [Media3 ExoPlayer](https://developer.android.com/media/media3/exoplayer)，原生负责媒体下载、ABR、缓冲和硬件解码，JavaScript 负责同片同集匹配与来源策略。
+公开构建使用干净 checkout，不包含 private assets。本机个人构建可在准备资源前设置 STREAMDESK_PERSONAL_BUILD=1，复制本地 sources.json、cloud.json 和已核验元数据到 APK；这种 APK 只能本地保留。首次启动复制配置到应用私有目录，覆盖安装保留原配置、索引、收藏与历史。禁止卸载再装作为更新步骤。
 
-桥接命令为 `load(episode,position)`、`stop()`、`setQuality()`、`snapshot()`；事件包含第一帧、错误、缓冲、播放位置、轨道变化。Media3 使用 `onRenderedFirstFrame` 与实际视频轨道/解码器统计，不能把 `STATE_READY` 当作第一帧。应用包名固定 `com.lezebomb.streamdesk`，versionCode 单调递增；keystore 与密码只进入 CI Secrets/离线备份，不提交源码。
+WebViewAssetLoader 提供固定 HTTPS 本地原点，原生消息只接受该原点的主框架；请求限制为已配置的 HTTPS API，保留超时、大小与并发边界。关闭文件访问、明文流量、外部顶层导航、证书错误放行；release 关闭 WebView 调试。视频仍由 HTML Video / hls.js 解码。旧 WebView 的 AbortSignal.any 有兼容实现。
 
-## 数据迁移
+播放时只保持本应用窗口亮屏；暂停、离开后台后释放，不改全局休眠设置。电视发现/控制尚未接入独立 APK，入口会明确提示，可用手机系统无线投屏；网页已有 DLNA 实现也未经过真实电视验收。不能宣称支持所有电视。
 
-当前收藏/历史已支持 schema 1 备份、旧 0.1.0 备份导入、导入前快照与非法数据拒绝。旧 `sd:favorites` / `sd:history` 保留为回退。来源 JSON 与健康评分分别存储，后者与设备/网络有关，不作为跨设备性能承诺。
+## 更新
 
-Windows 首次迁移从当前 PWA 导出，再由新客户端导入；Android 同样使用备份文件。新版本先验证数据再迁移，原文件留作备份；安装器不得清空 userData/app 私有数据。当前导出文件也含来源配置，可复制到来源 JSON 编辑器，导入收藏不会自动改写来源。
+应用启动及“我的”中可检查 GitHub Releases。提交源码本身不是可安装的更新：需递增 package.json 版本，并成功构建发布相应安装资产。Windows release-clients 工作流在主分支版本文件变更时构建并发布；已存在的版本不覆盖。Android 自动发布尚未配置稳定签名的 CI，个人 APK 绝不能上传公开 Releases。
 
-## GitHub Releases 发布
+Windows 使用 electron-updater，提示后下载，校验完成再由用户点击重启安装；下载失败保留当前版本和数据。Android 查找 StreamDesk-Android-X.Y.Z.apk，验证 GitHub SHA256、大小、包名、递增版本及与当前安装相同的签名证书，再交给系统覆盖安装。下载与验证失败不卸载当前应用。系统可能要求允许本应用安装未知来源或本人输入锁屏密码，不能绕过。
 
-1. 单元测试、构建、离线浏览器检查通过后，修改 package/versionCode。
-2. 创建匹配版本的 `vX.Y.Z` 标签；当前 release-pwa 工作流生成 PWA ZIP 与 SHA256，供人工审查和上传 Releases。
-3. 后续增加 Windows 签名 NSIS、blockmap、latest.yml，Android release APK、校验和、固定证书签名验证；在相关构建环境与签名可用前，不配置会假成功的空原生构建步骤。
-4. 先 Draft Release，完成旧版覆盖更新、断网/损坏包/空间不足测试后发布。
-
-Windows 使用签名 NSIS 和 electron-updater 的完整下载/校验/安装流程；下载到临时目录，失败不替换当前安装。用户确认重启后再应用更新。Android 检查 Releases，下载并验证包完整性，交给系统 Package Installer 覆盖安装；系统校验包名与签名，用户授权安装。不得静默安装，也不卸载旧版作为更新步骤。
-
-参考：[Electron 更新文档](https://www.electronjs.org/docs/latest/tutorial/updates)、[electron-builder 自动更新](https://github.com/electron-userland/electron-builder/blob/master/website/docs/features/auto-update.md)、[Android 应用签名](https://developer.android.com/studio/publish/app-signing)。安装器故障恢复与签名身份须在真实包上验证，文档不替代验证。
-
-当前库备份只保留作品元数据与历史选中的剧集，不重复存储上千集播放列表；详情播放列表按需重新获取。已用爱情公寓3 第二集、37 秒历史和原收藏验证 0.1.0 键迁移。
+原生客户端已完成本机安装、实际媒体及收藏持久化检查；全部证据只保留本地。APK 新设备密码登录、真实电视投屏及从公开 Release 下载后覆盖安装的完整更新链路，尚不能用已完成的界面/错误路径检查代替验收。

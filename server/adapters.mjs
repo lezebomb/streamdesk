@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import dns from 'node:dns/promises';
 import net from 'node:net';
+import path from 'node:path';
 import {createAppleCmsAdapter} from '../shared/source-adapter.ts';
 import {cacheCmsTransport} from '../shared/source-cache.ts';
 import { catalog } from './catalog.mjs';
@@ -8,7 +9,7 @@ import {searchSources} from '../shared/source-search.ts';
 import {networkSlot} from './network-pool.mjs';
 export async function readSources(){
  const configured=process.env.STREAMDESK_SOURCES;if(configured)return validateSources(JSON.parse(await fs.readFile(configured,'utf8')));
- const defaults=validateSources(JSON.parse(await fs.readFile('data/sources.example.json','utf8')));let saved=[];try{saved=validateSources(JSON.parse(await fs.readFile('data/sources.json','utf8')))}catch(e){if(e.code!=='ENOENT')throw e}
+ let defaults=[];if(!process.env.STREAMDESK_DATA)defaults=validateSources(JSON.parse(await fs.readFile('data/sources.example.json','utf8')));let saved=[];try{saved=validateSources(JSON.parse(await fs.readFile(path.join(process.env.STREAMDESK_DATA||'data','sources.json'),'utf8')))}catch(e){if(e.code!=='ENOENT')throw e}
  // Upgrade the verified defaults without deleting private configuration. Test fixtures
  // are available only via explicit STREAMDESK_SOURCES, never in the consumer catalog.
  const merged=new Map(saved.filter(s=>s.type!=='catalog').map(s=>[s.id,s]));for(const s of defaults)if(s.enabled)merged.set(s.id,{...merged.get(s.id),...s});return [...merged.values()];
@@ -31,7 +32,7 @@ function blocked(ip){
 }
 // Optional owner-maintained virtual DNS exceptions stay in ignored local configuration.
 // All other private/loopback targets and cross-origin redirects remain blocked.
-let dnsExceptions={proxyDnsHosts:[],virtualIpv6Prefix:''};try{dnsExceptions=JSON.parse(await fs.readFile(process.env.STREAMDESK_SECURITY||'data/security.json','utf8'))}catch(e){if(e.code!=='ENOENT')throw e}
+let dnsExceptions={proxyDnsHosts:[],virtualIpv6Prefix:''};try{dnsExceptions=JSON.parse(await fs.readFile(process.env.STREAMDESK_SECURITY||path.join(process.env.STREAMDESK_DATA||'data','security.json'),'utf8'))}catch(e){if(e.code!=='ENOENT')throw e}
 function permittedVirtual(host,ip){return dnsExceptions.proxyDnsHosts?.includes(host)&&(/^(198\.1[89]\.)/.test(ip)||dnsExceptions.virtualIpv6Prefix&&ip.toLowerCase().startsWith(dnsExceptions.virtualIpv6Prefix.toLowerCase()));}
 export async function publicTarget(url){const u=new URL(url);if(!['https:','http:'].includes(u.protocol)||u.username||u.password)throw new Error('只接受公开 HTTP(S)');let timer;const answers=await Promise.race([dns.lookup(u.hostname.replace(/^\[|\]$/g,''),{all:true}),new Promise((_,reject)=>timer=setTimeout(()=>reject(new Error('DNS 超时')),3000))]).finally(()=>clearTimeout(timer));if(!answers.length||answers.some(a=>blocked(a.address)&&!permittedVirtual(u.hostname,a.address)))throw new Error('不允许请求内网或保留地址');return u;}
 // Only requests to administrator-configured API origins, no arbitrary proxy or rewritten headers.

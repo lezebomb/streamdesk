@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
+import path from 'node:path';
 export async function cloudConfig(){
- let raw={};try{raw=JSON.parse(await fs.readFile('data/cloud.json','utf8'))}catch{}
+ let raw={};try{raw=JSON.parse(await fs.readFile(path.join(process.env.STREAMDESK_DATA||'data','cloud.json'),'utf8'))}catch{}
  const url=process.env.SUPABASE_URL||raw.url,key=process.env.SUPABASE_PUBLISHABLE_KEY||raw.publishableKey;
  if(!url||!key)return {configured:false};
  const u=new URL(url);if(u.protocol!=='https:'||!u.hostname.endsWith('.supabase.co')||u.pathname!=='/'||u.username||u.password)throw Error('Supabase 配置地址无效');

@@ -1,0 +1,35 @@
+appId: com.lezebomb.streamdesk
+productName: StreamDesk
+asar: true
+electronDist: node_modules/electron/dist
+directories:
+  output: artifacts/windows
+files:
+  - desktop/main.cjs
+  - desktop/preload.cjs
+  - runtime/server.mjs
+  - dist/**/*
+  - public/icon-512.png
+  - LICENSE
+  - LICENSES/**/*
+  - THIRD_PARTY_NOTICES.md
+  - package.json
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: public/icon-512.png
+  signExecutable: false
+nsis:
+  include: desktop/installer.nsh
+  oneClick: false
+  perMachine: false
+  allowElevation: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+  artifactName: StreamDesk-Setup-${version}.${ext}
+publish:
+  provider: github
+  owner: lezebomb
+  repo: streamdesk
+  private: false

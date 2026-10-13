@@ -7,8 +7,8 @@ const root=process.cwd(),stage=path.resolve('artifacts',`streamdesk-${version}`)
 if(!stage.startsWith(root+path.sep))throw new Error('打包目录超出工作区');
 try{await fs.stat(stage);throw new Error('打包目录已存在，保留原包；请使用新的版本目录')}catch(e){if(e.code!=='ENOENT')throw e}
 // Fail before creating an incomplete stage if a runtime dependency is missing.
-const dirs=['src','shared','server','public','dist','runtime','scripts','tests','docs','supabase','.github','LICENSES'];
-const roots=['package.json','package-lock.json','tsconfig.json','vite.config.ts','index.html','README.md','LICENSE','THIRD_PARTY_NOTICES.md','Start-StreamDesk.cmd','.npmrc','.env.example','.gitignore'];
+const dirs=['src','shared','server','public','dist','runtime','scripts','tests','docs','supabase','.github','LICENSES','desktop','android'];
+const roots=['package.json','package-lock.json','tsconfig.json','vite.config.ts','index.html','README.md','LICENSE','THIRD_PARTY_NOTICES.md','Start-StreamDesk.cmd','.npmrc','.env.example','.gitignore','electron-builder.yml'];
 const data=['sources.example.json','cloud.example.json','quality-sources.json','native-config.example.json'];
 for(const f of [...dirs,...roots,...data.map(x=>'data/'+x),'node_modules/hls.js/LICENSE'])await fs.access(f);
 await fs.mkdir(stage,{recursive:true});for(const dir of dirs)await fs.cp(dir,path.join(stage,dir),{recursive:true,filter:p=>{const relative=path.relative(root,path.resolve(p)).replaceAll('\\','/');return /^(?:dist|runtime)(?:\/|$)/.test(relative)||publicFile(relative)}});

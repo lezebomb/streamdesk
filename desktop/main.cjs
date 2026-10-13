@@ -1,0 +1,29 @@
+const {app,BrowserWindow,protocol,net,utilityProcess,ipcMain,dialog,session}=require('electron');
+const fs=require('node:fs/promises'),path=require('node:path'),http=require('node:net');const {autoUpdater}=require('electron-updater');
+protocol.registerSchemesAsPrivileged([{scheme:'app',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true,stream:true}}]);
+app.setAppUserModelId('com.lezebomb.streamdesk');if(process.env.STREAMDESK_TEST_HOME)app.setPath('userData',path.resolve(process.env.STREAMDESK_TEST_HOME));
+const single=app.requestSingleInstanceLock();if(!single){app.quit();return;}
+let window,backend;let updateState={state:'idle',version:app.getVersion()};
+function emit(state){updateState={version:app.getVersion(),...state};if(window&&!window.isDestroyed())window.webContents.send('sd:update-state',updateState)}
+function permitted(event){return window&&!window.isDestroyed()&&event.sender===window.webContents&&event.senderFrame===window.webContents.mainFrame&&event.senderFrame.url.startsWith('app://streamdesk/')}
+async function freePort(){const s=http.createServer();await new Promise((resolve,reject)=>s.listen(0,'127.0.0.1',resolve).on('error',reject));const port=s.address().port;await new Promise(r=>s.close(r));return port}
+async function check(){if(!app.isPackaged){emit({state:'unavailable',message:'开发运行不安装更新'});return updateState}if(['checking','downloading','ready'].includes(updateState.state))return updateState;emit({state:'checking'});try{await autoUpdater.checkForUpdates()}catch{emit({state:'unavailable',message:'暂时未获取到新的安装版本，当前版本可继续使用'})}return updateState}
+app.on('second-instance',()=>{window?.show();window?.focus()});
+app.whenReady().then(async()=>{
+ const assets=app.getAppPath(),data=path.join(app.getPath('userData'),'data');await fs.mkdir(data,{recursive:true});
+ try{await fs.access(path.join(data,'sources.json'))}catch{await fs.writeFile(path.join(data,'sources.json'),'[]')}
+ const port=await freePort(),base='http://127.0.0.1:'+port;
+ const env={...process.env,PORT:String(port),HOST:'127.0.0.1',STREAMDESK_DATA:data,STREAMDESK_DIST:path.join(assets,'dist')};for(const key of ['STREAMDESK_SOURCES','STREAMDESK_RESULT_CACHE','STREAMDESK_SECURITY'])delete env[key];
+ backend=utilityProcess.fork(path.join(assets,'runtime/server.mjs'),[],{cwd:app.getPath('userData'),env,stdio:'pipe',serviceName:'StreamDesk local catalogue'});
+ await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('本地服务启动超时')),10000);backend.stdout.on('data',b=>{if(b.toString().includes('StreamDesk production')){clearTimeout(timer);resolve()}});backend.once('exit',()=>{clearTimeout(timer);reject(Error('本地服务退出'))})});
+ protocol.handle('app',async request=>{try{const u=new URL(request.url);if(u.hostname!=='streamdesk')return new Response('',{status:403});const headers={};if(request.headers.get('content-type'))headers['Content-Type']=request.headers.get('content-type');let body;if(!['GET','HEAD'].includes(request.method)){body=await request.arrayBuffer();if(body.byteLength>512*1024)return new Response('',{status:413})}return await net.fetch(base+u.pathname+u.search,{method:request.method,headers,body,redirect:'error'})}catch{return new Response('本地服务暂时不可用',{status:503})}});
+ window=new BrowserWindow({show:!process.env.STREAMDESK_TEST_HOME,width:1320,height:880,minWidth:800,minHeight:600,title:'StreamDesk',icon:path.join(assets,'public/icon-512.png'),webPreferences:{preload:path.join(assets,'desktop/preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true}});
+ window.removeMenu();window.webContents.setWindowOpenHandler(()=>({action:'deny'}));window.webContents.on('will-navigate',(event,url)=>{if(!url.startsWith('app://streamdesk/'))event.preventDefault()});
+ session.defaultSession.setPermissionRequestHandler((contents,permission,callback)=>callback(contents===window?.webContents&&['fullscreen','wakeLock'].includes(permission)));
+ ipcMain.handle('sd:update',async(event,action)=>{if(!permitted(event))throw Error('不允许的调用');if(action==='state')return updateState;if(action==='check')return check();if(action==='download'&&updateState.state==='available'){emit({state:'downloading'});try{await autoUpdater.downloadUpdate()}catch{emit({state:'available',message:'下载失败，已安装版本和记录保留'})}return updateState}if(action==='install'&&updateState.state==='ready'){autoUpdater.quitAndInstall(false,true);return updateState}throw Error('更新操作无效')});
+ autoUpdater.autoDownload=false;autoUpdater.autoInstallOnAppQuit=false;autoUpdater.allowDowngrade=false;autoUpdater.allowPrerelease=false;autoUpdater.requestTimeout=10000;
+ autoUpdater.setFeedURL({provider:'github',owner:'lezebomb',repo:'streamdesk',private:false});
+ autoUpdater.on('update-available',info=>emit({state:'available',latest:info.version,message:'有新的安装版本'}));autoUpdater.on('update-not-available',()=>emit({state:'current',message:'当前已是最新安装版本'}));autoUpdater.on('download-progress',p=>emit({state:'downloading',percent:Math.floor(p.percent)}));autoUpdater.on('update-downloaded',info=>emit({state:'ready',latest:info.version,message:'下载校验完成，重启安装更新'}));autoUpdater.on('error',()=>emit({state:'unavailable',message:'更新暂时不可用，已安装版本和记录保留'}));
+ await window.loadURL('app://streamdesk/');window.webContents.once('did-finish-load',()=>setTimeout(()=>void check(),10000));setTimeout(()=>void check(),15000).unref();
+}).catch(error=>{dialog.showErrorBox('StreamDesk 启动失败',error.message);app.quit()});
+app.on('window-all-closed',()=>app.quit());app.on('before-quit',()=>backend?.kill());
