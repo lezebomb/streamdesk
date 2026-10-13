@@ -4,13 +4,14 @@ import {searchTerms,relevance,normalizedTitle,seasonQuery} from './search-releva
 import {contentKind} from './catalogue-policy.ts';
 import {parseSearchList,isAdultContent,isRelevant} from '../src/vendor/cms-parser.ts';
 
-export interface SourceAdapter {search(source:Source,query:string,signal:AbortSignal):Promise<Film[]>;detail(source:Source,id:string,signal:AbortSignal):Promise<Film|undefined>;browse?(source:Source,category:string,page:number,signal:AbortSignal,filters?:{genre?:string;language?:string;year?:string;offset?:number}):Promise<{list:Film[];hasMore:boolean}>}
+export interface SourceAdapter {search(source:Source,query:string,signal:AbortSignal):Promise<Film[]>;artwork?(source:Source,film:Film,signal:AbortSignal):Promise<Film[]>;detail(source:Source,id:string,signal:AbortSignal):Promise<Film|undefined>;browse?(source:Source,category:string,page:number,signal:AbortSignal,filters?:{genre?:string;language?:string;year?:string;offset?:number}):Promise<{list:Film[];hasMore:boolean}>}
 export type CmsTransport=(source:Source,params:Record<string,string>,signal:AbortSignal)=>Promise<{list:Record<string,unknown>[]} & Record<string,unknown>>;
 // Transport is supplied by Node DNS-guarded HTTP, Electron IPC or Capacitor native HTTP.
 // The parser and identity rules have no Node runtime dependency.
 export function createAppleCmsAdapter(fetchJson:CmsTransport):SourceAdapter {
  const shape=(source:Source)=>({key:source.id,name:source.name,url:source.api!});
  return {
+  async artwork(source,film,signal){const raw=await fetchJson(source,{ac:'videolist',wd:film.title,pg:'1'},signal);return (raw.list||[]).filter(row=>!isAdultContent(String(row.type_name||''))).map(row=>({...cmsFilm(row,source.id),episodes:[],groups:undefined}))},
   async search(source,query,signal){
    if(!query)return [];const out:Film[]=[],terms=searchTerms(query);let requests=0;
    for(const term of terms){let pages=1;

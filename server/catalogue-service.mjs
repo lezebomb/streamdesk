@@ -1,18 +1,21 @@
 import {catalogueIndex} from './catalogue-index.mjs';import {metadataCatalogue} from './metadata-catalogue.mjs';
 import {browseSources} from './discovery.mjs';import {sameFilm} from '../shared/policy.ts';import {searchAll,adapters} from './adapters.mjs';import {ratingMatch,attachRating} from '../shared/ratings.ts';
+import {createArtworkLookup} from '../shared/artwork.ts';
 export function catalogueService({indexFile='data/catalogue-index.json',metadataFile='data/metadata-catalogue.json'}={}){
  const index=catalogueIndex(indexFile),metadata=metadataCatalogue(metadataFile);let lastWarm=0,warming;
  async function ingest(rows){await index.ingest(rows)}
+ const artwork=createArtworkLookup({known:()=>index.all(),sources:async()=>activeSources,fetch:(s,f,signal)=>adapters.get(s.type).artwork(s,f,signal),ingest:films=>ingest([{list:films}])});let activeSources=[];
  async function current(filters,sources){return index.query(filters,sources.filter(s=>s.enabled).map(s=>s.id),await metadata.all())}
  function warm(){if(warming)return warming;if(Date.now()-lastWarm<3600000)return;lastWarm=Date.now();warming=metadata.refresh().catch(()=>{}).finally(()=>warming=null);return warming}
  async function filmForRating(source,id,sources){if(source==='metadata')return metadata.cached(id);if(!sources.some(s=>s.enabled&&s.id===source))return;return index.find(source,id)}
- return {ingest,metadata,index,warm,async rating(source,id,sources,verify=false){
+ return {ingest,metadata,index,warm,async posters(source,id,sources,failed=[]){activeSources=sources;const film=await filmForRating(source,id,sources);return film?artwork(film,failed):[]},async rating(source,id,sources,verify=false){
   const film=await filmForRating(source,id,sources);if(!film)return;
   const subjectId=film.canonicalId?.match(/^douban:(\d+)$/)?.[1];if(!subjectId)return;
   const meta=verify?await metadata.detail(subjectId):await metadata.cached(subjectId);
   return meta&&ratingMatch(film,meta)?attachRating(film,meta).doubanRating:undefined;
  },async browse(sources,filters,page,signal,receive){
   const selected={...filters,sort:filters.sort==='score'?'score':'latest'},existing=await current(selected,sources);
+  if(existing.length<page*48&&existing.length>(page-1)*48)receive({sourceId:'catalogue-index',ok:true,ms:0,list:existing.slice((page-1)*48,page*48),hasMore:true});
   // Directory transactions send one sorted snapshot; metadata refresh never holds them up.
   if(existing.length>=page*48){receive({sourceId:'catalogue-index',ok:true,ms:0,list:existing.slice((page-1)*48,page*48),hasMore:true});void warm();return}
   const start=performance.now(),rows=await browseSources(sources,filters.category,page,signal,()=>{},filters);await ingest(rows);const list=await current(selected,sources);

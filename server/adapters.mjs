@@ -7,9 +7,11 @@ import {cacheCmsTransport} from '../shared/source-cache.ts';
 import { catalog } from './catalog.mjs';
 import {searchSources} from '../shared/source-search.ts';
 import {networkSlot} from './network-pool.mjs';
+const configuredSourceFile=process.env.STREAMDESK_SOURCES,sourceDataRoot=process.env.STREAMDESK_DATA;
+const sourceFile=path.resolve(configuredSourceFile||path.join(sourceDataRoot||'data','sources.json'));
 export async function readSources(){
- const configured=process.env.STREAMDESK_SOURCES;if(configured)return validateSources(JSON.parse(await fs.readFile(configured,'utf8')));
- let defaults=[];if(!process.env.STREAMDESK_DATA)defaults=validateSources(JSON.parse(await fs.readFile('data/sources.example.json','utf8')));let saved=[];try{saved=validateSources(JSON.parse(await fs.readFile(path.join(process.env.STREAMDESK_DATA||'data','sources.json'),'utf8')))}catch(e){if(e.code!=='ENOENT')throw e}
+ if(configuredSourceFile)return validateSources(JSON.parse(await fs.readFile(sourceFile,'utf8')));
+ let defaults=[];if(!sourceDataRoot)defaults=validateSources(JSON.parse(await fs.readFile('data/sources.example.json','utf8')));let saved=[];try{saved=validateSources(JSON.parse(await fs.readFile(sourceFile,'utf8')))}catch(e){if(e.code!=='ENOENT')throw e}
  // Upgrade the verified defaults without deleting private configuration. Test fixtures
  // are available only via explicit STREAMDESK_SOURCES, never in the consumer catalog.
  const merged=new Map(saved.filter(s=>s.type!=='catalog').map(s=>[s.id,s]));for(const s of defaults)if(s.enabled)merged.set(s.id,{...merged.get(s.id),...s});return [...merged.values()];

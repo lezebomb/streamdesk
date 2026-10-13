@@ -7,6 +7,7 @@ directories:
 files:
   - desktop/main.cjs
   - desktop/preload.cjs
+  - desktop/backend.mjs
   - runtime/server.mjs
   - dist/**/*
   - public/icon-512.png

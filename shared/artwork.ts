@@ -1,0 +1,8 @@
+import type {Film,Source} from './model';import {ratingMatch} from './ratings.ts';import {posterChoices} from './posters.ts';
+export function matchedPosters(f:Film,known:Film[],failed:string[]=[]):string[]{const excluded=new Set(failed);return [...new Set([...known.filter(k=>k.sourceId!=='metadata'&&ratingMatch(f,k)).flatMap(posterChoices),...posterChoices(f)])].filter(u=>!excluded.has(u)).slice(0,4)}
+export function createArtworkLookup(options:{known:()=>Promise<Film[]>;sources:()=>Promise<Source[]>;fetch:(source:Source,film:Film,signal:AbortSignal)=>Promise<Film[]>;ingest:(films:Film[])=>Promise<void>}){
+ const pending=new Map<string,Promise<string[]>>(),misses=new Map<string,number>();
+ return async(f:Film,failed:string[]=[])=>{const cached=matchedPosters(f,await options.known(),failed);if(cached.length)return cached;const key=[f.sourceId,f.id].join(':');if((misses.get(key)||0)>Date.now())return [];if(pending.has(key))return pending.get(key)!;
+  const task=(async()=>{const signal=AbortSignal.timeout(9000),found:Film[]=[],sources=(await options.sources()).filter(s=>s.enabled&&s.type==='applecms').sort((a,b)=>(b.priority||0)-(a.priority||0)).slice(0,3);for(const source of sources){if(signal.aborted)break;try{const rows=await options.fetch(source,f,signal);found.push(...rows.filter(r=>ratingMatch(f,r)));const urls=matchedPosters(f,found,failed);if(urls.length>=2)break}catch{}}if(found.length)await options.ingest(found);const urls=matchedPosters(f,found,failed);if(!urls.length){misses.set(key,Date.now()+120000);if(misses.size>500)misses.delete(misses.keys().next().value!)}return urls})().finally(()=>pending.delete(key));pending.set(key,task);return task;
+ };
+}

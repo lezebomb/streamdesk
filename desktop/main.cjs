@@ -14,7 +14,7 @@ app.whenReady().then(async()=>{
  try{await fs.access(path.join(data,'sources.json'))}catch{await fs.writeFile(path.join(data,'sources.json'),'[]')}
  const port=await freePort(),base='http://127.0.0.1:'+port;
  const env={...process.env,PORT:String(port),HOST:'127.0.0.1',STREAMDESK_DATA:data,STREAMDESK_DIST:path.join(assets,'dist')};for(const key of ['STREAMDESK_SOURCES','STREAMDESK_RESULT_CACHE','STREAMDESK_SECURITY'])delete env[key];
- backend=utilityProcess.fork(path.join(assets,'runtime/server.mjs'),[],{cwd:app.getPath('userData'),env,stdio:'pipe',serviceName:'StreamDesk local catalogue'});
+ backend=utilityProcess.fork(path.join(assets,'desktop/backend.mjs'),[data,path.join(assets,'dist'),String(port)],{cwd:app.getPath('userData'),env,stdio:'pipe',serviceName:'StreamDesk local catalogue'});
  await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('本地服务启动超时')),10000);backend.stdout.on('data',b=>{if(b.toString().includes('StreamDesk production')){clearTimeout(timer);resolve()}});backend.once('exit',()=>{clearTimeout(timer);reject(Error('本地服务退出'))})});
  // Verify the actual user directory before showing an apparently empty application.
  const configured=JSON.parse(await fs.readFile(path.join(data,'sources.json'),'utf8'));

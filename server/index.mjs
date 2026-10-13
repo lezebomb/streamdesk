@@ -35,6 +35,7 @@ const server=http.createServer(async(req,res)=>{
   const sources=await readSources();
   const sourceFingerprint=createHash('sha256').update(JSON.stringify(sources)).digest('hex');
   if(req.method==='GET'&&url.pathname==='/api/sources'){send(res,200,{sources:sources.map(({id,name,type,enabled,priority})=>({id,name,type,enabled,priority}))});return}
+  if(req.method==='POST'&&url.pathname==='/api/posters'){const data=await body(req);if(typeof data.source!=='string'||data.source.length>40||typeof data.id!=='string'||data.id.length>80||!Array.isArray(data.failed)||data.failed.length>4||data.failed.some(u=>typeof u!=='string'||u.length>2048))throw Error('封面请求无效');send(res,200,{urls:await catalogue.posters(data.source,data.id,sources,data.failed)});return}
   if(req.method==='POST'&&url.pathname==='/api/ratings'){
    const data=await body(req);if(!Array.isArray(data.items)||data.items.length>12||data.verify&&data.items.length!==1)throw Error('评分请求数量无效');
    const list=[];for(const item of data.items){if(typeof item.source!=='string'||item.source.length>40||typeof item.id!=='string'||item.id.length>80)throw Error('作品标识无效');let verify=false;
