@@ -33,3 +33,4 @@ reports/*.json
 !reports/expansion-summary.json
 !reports/enhancement-summary.json
 !reports/packaging-summary.json
+!reports/experience-summary.json

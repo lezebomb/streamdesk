@@ -14,7 +14,7 @@ export function libraryMatches(a:Film,b:Film):boolean {
 export function resumeEpisode(history:History,film:Film):Episode|undefined {
  if(!libraryMatches(history.film,film))return undefined;const all=playbackGroups(film).flatMap(g=>g.episodes),season=history.film.season??seasonOf(history.film.title,history.film.category);
  const old=history.film.episodes.find(e=>e.key===history.episodeKey);
- if(old){const parsed=episodeIdentity(old.label,season),desired={...old,season:old.season??parsed.season,number:old.number??parsed.number,part:old.part??parsed.part};const sameUrl=all.find(e=>e.url===old.url&&matchEpisode(desired,[e]));return sameUrl||matchEpisode(desired,all)}
+ if(old){const parsed=episodeIdentity(old.label,season),desired={...old,season:old.season??parsed.season,number:old.number??parsed.number,part:old.part??parsed.part,edition:old.edition??parsed.edition};const sameUrl=all.find(e=>e.url===old.url&&matchEpisode(desired,[e]));return sameUrl||matchEpisode(desired,all)}
  const exact=all.find(e=>e.key===history.episodeKey);if(exact)return exact;
  const legacy=history.episodeKey.match(/^episode:(\d+)$/);return legacy?all.find(e=>e.number===Number(legacy[1])&&e.season===season&&!e.part):undefined;
 }

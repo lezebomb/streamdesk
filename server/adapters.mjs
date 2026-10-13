@@ -5,7 +5,13 @@ import {createAppleCmsAdapter} from '../shared/source-adapter.ts';
 import {cacheCmsTransport} from '../shared/source-cache.ts';
 import { catalog } from './catalog.mjs';
 import {searchSources} from '../shared/source-search.ts';
-export async function readSources(){let raw;const configured=process.env.STREAMDESK_SOURCES;if(configured)return validateSources(JSON.parse(await fs.readFile(configured,'utf8')));try{raw=await fs.readFile('data/sources.json','utf8')}catch{raw=await fs.readFile('data/sources.example.json','utf8')}return validateSources(JSON.parse(raw));}
+export async function readSources(){
+ const configured=process.env.STREAMDESK_SOURCES;if(configured)return validateSources(JSON.parse(await fs.readFile(configured,'utf8')));
+ const defaults=validateSources(JSON.parse(await fs.readFile('data/sources.example.json','utf8')));let saved=[];try{saved=validateSources(JSON.parse(await fs.readFile('data/sources.json','utf8')))}catch(e){if(e.code!=='ENOENT')throw e}
+ // Upgrade the verified defaults without deleting private configuration. Test fixtures
+ // are available only via explicit STREAMDESK_SOURCES, never in the consumer catalog.
+ const merged=new Map(saved.filter(s=>s.type!=='catalog').map(s=>[s.id,s]));for(const s of defaults)if(s.enabled)merged.set(s.id,{...merged.get(s.id),...s});return [...merged.values()];
+}
 export function validateSources(sources){
  if(!Array.isArray(sources)||sources.length>20)throw new Error('最多配置 20 个来源');
  const ids=new Set();return sources.map(s=>{
@@ -25,7 +31,7 @@ function blocked(ip){
 // This machine's VPN returns paired 198.18/15 + fdfe:dcba:9876 virtual DNS addresses.
 // Exception is limited to these verified provider hostnames, these exact virtual ranges,
 // and configured API calls. Other private hosts/IPs and all redirects remain blocked.
-const proxyDnsHosts=new Set(['bfzyapi.com','cj.lziapi.com','api.ffzyapi.com','api.guangsuapi.com','api.wujinapi.me','www.hongniuzy2.com','subocj.com']);
+const proxyDnsHosts=new Set(['bfzyapi.com','cj.lziapi.com','api.ffzyapi.com','api.guangsuapi.com','api.wujinapi.me','www.hongniuzy2.com','subocj.com','www.mdzyapi.com','ikunzyapi.com']);
 function permittedVirtual(host,ip){return proxyDnsHosts.has(host)&&(/^(198\.1[89]\.)/.test(ip)||/^fdfe:dcba:9876:/i.test(ip));}
 export async function publicTarget(url){const u=new URL(url);if(!['https:','http:'].includes(u.protocol)||u.username||u.password)throw new Error('只接受公开 HTTP(S)');let timer;const answers=await Promise.race([dns.lookup(u.hostname.replace(/^\[|\]$/g,''),{all:true}),new Promise((_,reject)=>timer=setTimeout(()=>reject(new Error('DNS 超时')),3000))]).finally(()=>clearTimeout(timer));if(!answers.length||answers.some(a=>blocked(a.address)&&!permittedVirtual(u.hostname,a.address)))throw new Error('不允许请求内网或保留地址');return u;}
 // Only requests to administrator-configured API origins, no arbitrary proxy or rewritten headers.

@@ -2,6 +2,8 @@ import http from 'node:http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { readSources, validateSources, adapters, searchAll, publicTarget } from './adapters.mjs';
+import {browseSources} from './discovery.mjs';
+import {discoverRenderers,castEpisode,rendererAction} from './casting.mjs';
 const port=Number(process.env.PORT||4173),host=process.env.HOST||'127.0.0.1';
 const dev=process.argv.includes('--dev');
 const vite=dev?await (await import('vite')).createServer({server:{middlewareMode:true},appType:'spa'}):null;
@@ -22,6 +24,15 @@ const server=http.createServer(async(req,res)=>{
    const next=validateSources((await body(req)).sources);for(const s of next)if(s.type==='applecms')await publicTarget(s.api);
    await fs.writeFile('data/sources.json.tmp',JSON.stringify(next,null,2));await fs.rename('data/sources.json.tmp','data/sources.json');send(res,200,{sources:next});return;
   }
+  if(req.method==='GET'&&url.pathname==='/api/browse'){
+   const category=url.searchParams.get('category')||'推荐',page=Number(url.searchParams.get('page')||1);if(!['推荐','电影','电视剧','动漫','综艺'].includes(category)||!Number.isInteger(page)||page<1||page>1000)throw Error('分类或页码无效');
+   res.writeHead(200,{'Content-Type':'application/x-ndjson; charset=utf-8','Cache-Control':'no-store'});res.flushHeaders();const write=data=>{if(!res.destroyed)res.write(JSON.stringify(data)+'\n')};write({type:'start',total:sources.filter(s=>s.enabled&&s.type==='applecms').length});const filters=Object.fromEntries(['genre','language','year'].map(k=>[k,(url.searchParams.get(k)||'全部').slice(0,20)]));await browseSources(sources,category,page,controller.signal,row=>write({type:'source',row}),filters);write({type:'done',ms:performance.now()-start});res.end();return;
+  }
+  if(req.method==='GET'&&url.pathname==='/api/cast/devices'){send(res,200,{devices:await discoverRenderers()});return}
+  if(req.method==='POST'&&url.pathname==='/api/cast/play'){
+   const data=await body(req),source=sources.find(s=>s.id===data.source&&s.enabled);if(!source)throw Error('来源未启用');const film=await adapters.get(source.type).detail(source,String(data.id),controller.signal);const episode=film?.groups?.filter(g=>!data.groupId||g.id===data.groupId).flatMap(g=>g.episodes).find(e=>e.key===data.episodeKey)||film?.episodes.find(e=>e.key===data.episodeKey&&(!data.groupId||e.groupId===data.groupId));if(!episode)throw Error('未找到当前选集');send(res,200,await castEpisode(data.deviceId,film,episode,data.position));return;
+  }
+  if(req.method==='POST'&&url.pathname==='/api/cast/control'){const data=await body(req);if(!['Play','Pause','Stop'].includes(data.action))throw Error('不支持的投屏操作');await rendererAction(data.deviceId,data.action,data.action==='Play'?{Speed:1}:{});send(res,200,{commandAccepted:true});return}
   if(req.method==='GET'&&url.pathname==='/api/search'){
    const q=(url.searchParams.get('q')||'').slice(0,100);
    if(url.searchParams.get('stream')==='1'){

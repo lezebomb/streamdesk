@@ -32,7 +32,7 @@ export function sameFilm(a:Film,b:Film):boolean{
  return normalize(base(a))===normalize(base(b))&&!!a.year&&a.year===b.year&&a.category===b.category;
 }
 export function matchEpisode(current:Episode,candidates:Episode[]):Episode|undefined{
- const compatible=candidates.filter(e=>e.season===current.season&&e.part===current.part);
+ const compatible=candidates.filter(e=>e.season===current.season&&e.part===current.part&&e.edition===current.edition);
  return compatible.find(e=>e.key===current.key)||compatible.find(e=>current.number!==undefined&&e.number===current.number)||compatible.find(e=>e.label.trim()===current.label.trim());
 }
 export async function poolMap<T,R>(items:T[],limit:number,fn:(item:T)=>Promise<R>):Promise<R[]>{

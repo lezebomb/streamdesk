@@ -1,6 +1,6 @@
 {
   "name": "streamdesk-personal",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "license": "AGPL-3.0-or-later",
@@ -25,9 +25,11 @@
     "package:pwa": "node scripts/package.mjs",
     "test:enhancement": "node scripts/enhancement-smoke.mjs",
     "bench:enhancement": "node scripts/enhancement-benchmark.mjs",
-    "test:package": "node scripts/package-smoke.mjs"
+    "test:package": "node scripts/package-smoke.mjs",
+    "test:experience": "node scripts/experience.mjs"
   },
   "dependencies": {
+    "@phosphor-icons/web": "^2.1.2",
     "hls.js": "1.7.3"
   },
   "devDependencies": {

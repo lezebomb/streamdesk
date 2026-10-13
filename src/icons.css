@@ -1,0 +1,42 @@
+/* Phosphor Icons 2.1.2, MIT. Exact upstream glyph definitions. */
+@font-face{font-family:Phosphor;src:url('../node_modules/@phosphor-icons/web/src/regular/Phosphor.woff2') format('woff2');font-weight:normal;font-style:normal;font-display:block}
+.ph{font-family:Phosphor!important;font-style:normal;font-weight:normal;font-variant:normal;text-transform:none;line-height:1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.ph-television-simple:before {
+  content: "\eae6";
+}
+.ph-magnifying-glass:before {
+  content: "\e30c";
+}
+.ph-caret-right:before {
+  content: "\e13a";
+}
+.ph-arrows-clockwise:before {
+  content: "\e094";
+}
+.ph-user-circle:before {
+  content: "\e4c4";
+}
+.ph-clock-counter-clockwise:before {
+  content: "\e1a0";
+}
+.ph-download-simple:before {
+  content: "\e20c";
+}
+.ph-bookmark-simple:before {
+  content: "\e0ea";
+}
+.ph-arrow-left:before {
+  content: "\e058";
+}
+.ph-screencast:before {
+  content: "\e404";
+}
+.ph-play-circle:before {
+  content: "\e3d2";
+}
+.ph-spinner-gap:before {
+  content: "\e66c";
+}
+.ph-play:before {
+  content: "\e3d0";
+}
