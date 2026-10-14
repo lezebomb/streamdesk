@@ -1,0 +1,12 @@
+{
+  "proxyDnsHosts": [
+    "bfzyapi.com",
+    "api.guangsuapi.com",
+    "www.hongniuzy2.com",
+    "subocj.com",
+    "www.mdzyapi.com",
+    "ikunzyapi.com",
+    "cj.rycjapi.com"
+  ],
+  "virtualIpv6Prefix": ""
+}

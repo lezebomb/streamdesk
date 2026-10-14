@@ -15,6 +15,10 @@ Supabase 默认 SMTP 目前仅向项目团队邮箱发送，且每小时仅 2 �
 
 GitHub / CI 包不含私人云配置。个人本机打包可设置 INCLUDE_CLOUD_CONFIG=1，打包器只允许 publishable / anon key；绝不将 secret / service_role key 装进客户端。
 
+0.6.8 起，按所有者明确授权，公开发行包内置 `public/client-defaults/cloud.json` 的服务 URL 和 publishable key，便于新设备直接登录。它不包含管理密钥或任何用户会话。已核对实际云表启用 RLS，读写政策均限定 authenticated 用户的 auth.uid()，同步 RPC 使用 security invoker。
+
+已有账号的密码登录与新邮箱注册应分开验收。一加 Android 16 新设备已由本人输入密码并完成实际同步；其他非项目团队邮箱的注册邮件仍需要配置自定义 SMTP，当前不能宣称已支持任意新邮箱注册。应用搜索播放不要求登录。不关闭邮箱确认，也不添加朋友为项目管理团队成员来绕过邮件限制。
+
 来源目录采用本地持久元数据索引：速度优先且不消耗云端额度。完整查询结果缓存 15 分钟，部分失败短缓存 30 秒；分类信息缓存 30 分钟，播放详情仅短缓存 60 秒。任何分片和带时效播放地址均不进入持久目录缓存。来源配置、接口版本和筛选条件构成缓存键；停用来源不再参与结果。不是全库镜像，也不是完整豆瓣排行榜。
 
 参考：[Free 额度](https://supabase.com/pricing)、[邮箱密码](https://supabase.com/docs/guides/auth/passwords)、[SMTP 限制](https://supabase.com/docs/guides/auth/auth-smtp)、[RLS](https://supabase.com/docs/guides/database/postgres/row-level-security)。

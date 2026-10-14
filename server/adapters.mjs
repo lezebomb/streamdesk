@@ -32,9 +32,9 @@ function blocked(ip){
  // Restrict to global IPv6 2000::/3; reject mapped IPv4 and local ranges.
  return !/^[23][0-9a-f]{3}:/i.test(ip)||/^2001:db8:/i.test(ip);
 }
-// Optional owner-maintained virtual DNS exceptions stay in ignored local configuration.
-// All other private/loopback targets and cross-origin redirects remain blocked.
-let dnsExceptions={proxyDnsHosts:[],virtualIpv6Prefix:''};try{dnsExceptions=JSON.parse(await fs.readFile(runtimeConfig.securityFile,'utf8'))}catch(e){if(e.code!=='ENOENT')throw e}
+// Known public source domains support proxy benchmark IPv4 mappings; owner
+// overrides remain local. Unknown domains, other private IPs and redirects stay blocked.
+let dnsExceptions={proxyDnsHosts:[],virtualIpv6Prefix:''};try{dnsExceptions=JSON.parse(await fs.readFile(runtimeConfig.securityFile,'utf8'))}catch(e){if(e.code!=='ENOENT')throw e;try{dnsExceptions=JSON.parse(await fs.readFile(path.join(runtimeConfig.distRoot,'client-defaults/proxy-dns.json'),'utf8'))}catch(fallback){if(fallback.code!=='ENOENT')throw fallback}}
 function permittedVirtual(host,ip){return dnsExceptions.proxyDnsHosts?.includes(host)&&(/^(198\.1[89]\.)/.test(ip)||dnsExceptions.virtualIpv6Prefix&&ip.toLowerCase().startsWith(dnsExceptions.virtualIpv6Prefix.toLowerCase()));}
 export async function publicTarget(url){const u=new URL(url);if(!['https:','http:'].includes(u.protocol)||u.username||u.password)throw new Error('只接受公开 HTTP(S)');let timer;const answers=await Promise.race([dns.lookup(u.hostname.replace(/^\[|\]$/g,''),{all:true}),new Promise((_,reject)=>timer=setTimeout(()=>reject(new Error('DNS 超时')),3000))]).finally(()=>clearTimeout(timer));if(!answers.length||answers.some(a=>blocked(a.address)&&!permittedVirtual(u.hostname,a.address)))throw new Error('不允许请求内网或保留地址');return u;}
 // Only requests to administrator-configured API origins, no arbitrary proxy or rewritten headers.

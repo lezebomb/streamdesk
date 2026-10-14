@@ -1,1 +1,71 @@
-[]
+[
+  {
+    "id": "baofeng",
+    "name": "暴风",
+    "type": "applecms",
+    "enabled": true,
+    "api": "https://bfzyapi.com/api.php/provide/vod/",
+    "supportsYear": true,
+    "supportsYearRange": true
+  },
+  {
+    "id": "guangsu",
+    "name": "光速",
+    "type": "applecms",
+    "enabled": true,
+    "api": "https://api.guangsuapi.com/api.php/provide/vod/",
+    "priority": 8,
+    "supportsYear": false,
+    "supportsYearRange": false
+  },
+  {
+    "id": "hongniu",
+    "name": "红牛",
+    "type": "applecms",
+    "enabled": true,
+    "api": "https://www.hongniuzy2.com/api.php/provide/vod/from/hnm3u8/at/josn/",
+    "priority": 10,
+    "supportsYear": false,
+    "supportsYearRange": false
+  },
+  {
+    "id": "subo",
+    "name": "速播",
+    "type": "applecms",
+    "enabled": true,
+    "api": "https://subocj.com/api.php/provide/vod/at/json",
+    "priority": 6,
+    "supportsYear": true,
+    "supportsYearRange": true
+  },
+  {
+    "id": "modu",
+    "name": "魔都",
+    "type": "applecms",
+    "enabled": true,
+    "api": "https://www.mdzyapi.com/api.php/provide/vod/",
+    "priority": 7,
+    "supportsYear": true,
+    "supportsYearRange": true
+  },
+  {
+    "id": "ikun",
+    "name": "ikun",
+    "type": "applecms",
+    "enabled": true,
+    "api": "https://ikunzyapi.com/api.php/provide/vod",
+    "priority": 7,
+    "supportsYear": true,
+    "supportsYearRange": true
+  },
+  {
+    "id": "ruyi",
+    "name": "如意",
+    "type": "applecms",
+    "enabled": true,
+    "api": "https://cj.rycjapi.com/api.php/provide/vod/",
+    "priority": 7,
+    "supportsYear": false,
+    "supportsYearRange": false
+  }
+]

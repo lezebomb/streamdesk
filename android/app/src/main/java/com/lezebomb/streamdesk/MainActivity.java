@@ -2,6 +2,7 @@ package com.lezebomb.streamdesk;
 
 import android.app.Activity;import android.os.Bundle;import android.net.Uri;import android.content.Intent;import android.content.pm.PackageInfo;import android.content.pm.PackageManager;import android.view.View;import android.view.WindowManager;import android.webkit.*;import android.widget.FrameLayout;
 import androidx.webkit.WebViewAssetLoader;import androidx.webkit.WebViewCompat;import androidx.webkit.WebViewFeature;import androidx.core.content.FileProvider;
+import androidx.core.view.ViewCompat;import androidx.core.view.WindowCompat;import androidx.core.view.WindowInsetsCompat;import androidx.core.graphics.Insets;
 import org.json.*;import java.io.*;import java.net.*;import java.nio.charset.StandardCharsets;import java.nio.file.Files;import java.nio.file.StandardCopyOption;import java.security.MessageDigest;import java.util.*;import java.util.concurrent.*;
 
 public class MainActivity extends Activity {
@@ -10,6 +11,9 @@ public class MainActivity extends Activity {
  private PosterCache posterCache;private JSONObject config;private JSONObject updateState;private JSONObject updateAsset;private File verifiedApk;
  @Override public void onCreate(Bundle state){super.onCreate(state);posterCache=new PosterCache(getCacheDir());try{prepareConfig();updateState=new JSONObject().put("state","idle").put("version",BuildConfig.VERSION_NAME);}catch(Exception e){throw new IllegalStateException("私人配置格式无效",e);}
   root=new FrameLayout(this);web=new WebView(this);root.addView(web,new FrameLayout.LayoutParams(-1,-1));setContentView(root);
+  WindowCompat.setDecorFitsSystemWindows(getWindow(),false);root.setBackgroundColor(0xfff5faf9);
+  WindowCompat.getInsetsController(getWindow(),root).setAppearanceLightStatusBars(true);WindowCompat.getInsetsController(getWindow(),root).setAppearanceLightNavigationBars(true);
+  ViewCompat.setOnApplyWindowInsetsListener(root,(view,insets)->{Insets bars=insets.getInsets(WindowInsetsCompat.Type.systemBars()|WindowInsetsCompat.Type.displayCutout()),ime=insets.getInsets(WindowInsetsCompat.Type.ime());view.setPadding(bars.left,bars.top,bars.right,Math.max(bars.bottom,ime.bottom));return WindowInsetsCompat.CONSUMED;});ViewCompat.requestApplyInsets(root);
   WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);WebSettings settings=web.getSettings();settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);settings.setAllowFileAccess(false);settings.setAllowContentAccess(false);settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);settings.setMediaPlaybackRequiresUserGesture(false);
   final WebViewAssetLoader assets=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
   web.setWebViewClient(new WebViewClient(){
@@ -31,6 +35,7 @@ public class MainActivity extends Activity {
  }
  private void prepareConfig()throws Exception{
   for(String name:new String[]{"sources.json","cloud.json","metadata-catalogue.json"}){File file=new File(getFilesDir(),name);if(!file.exists())try(InputStream in=getAssets().open("private/"+name)){Files.copy(in,file.toPath());}catch(FileNotFoundException ignored){}}
+  for(String name:new String[]{"sources.json","cloud.json"}){File file=new File(getFilesDir(),name);String existing=readFile(name,"").trim();if(!file.exists()||existing.equals(name.equals("sources.json")?"[]":"{}"))try(InputStream in=getAssets().open("defaults/"+name)){Files.copy(in,file.toPath(),StandardCopyOption.REPLACE_EXISTING);}catch(FileNotFoundException ignored){}}
   JSONArray sources=new JSONArray(readFile("sources.json","[]"));if(sources.length()>20)throw new IOException("Too many sources");
   for(int n=0;n<sources.length();n++){JSONObject source=sources.getJSONObject(n);URI uri=new URI(source.getString("api"));if(!"https".equals(uri.getScheme())||uri.getUserInfo()!=null||uri.getHost()==null)throw new IOException("Invalid source origin");}
   config=new JSONObject().put("sources",sources).put("cloud",new JSONObject(readFile("cloud.json","{}"))).put("metadata",new JSONObject(readFile("metadata-catalogue.json","{}"))).put("index",new JSONArray(readFile("catalogue-index.json","[]")));posterCache.films(config.getJSONArray("index"));JSONArray metadataFilms=config.getJSONObject("metadata").optJSONArray("films");if(metadataFilms!=null)posterCache.films(metadataFilms);

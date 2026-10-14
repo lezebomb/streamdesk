@@ -9,6 +9,8 @@ files:
   - desktop/preload.cjs
   - desktop/backend.mjs
   - desktop/service-health.cjs
+  - data/sources.example.json
+  - public/client-defaults/cloud.json
   - runtime/server.mjs
   - dist/**/*
   - public/icon-512.png

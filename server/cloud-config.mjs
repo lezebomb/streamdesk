@@ -4,7 +4,7 @@ import {runtimeConfig} from './runtime-config.mjs';
 const cloudFile=path.join(runtimeConfig.dataRoot,'cloud.json');
 const configuredUrl=runtimeConfig.desktop?undefined:process.env.SUPABASE_URL,configuredKey=runtimeConfig.desktop?undefined:process.env.SUPABASE_PUBLISHABLE_KEY;
 export async function cloudConfig(){
- let raw={};try{raw=JSON.parse(await fs.readFile(cloudFile,'utf8'))}catch(e){if(e.code!=='ENOENT')throw e}
+ let raw={};try{raw=JSON.parse(await fs.readFile(cloudFile,'utf8'))}catch(e){if(e.code!=='ENOENT')throw e;try{raw=JSON.parse(await fs.readFile(path.join(runtimeConfig.distRoot,'client-defaults/cloud.json'),'utf8'))}catch(fallback){if(fallback.code!=='ENOENT')throw fallback}}
  const url=configuredUrl||raw.url,key=configuredKey||raw.publishableKey;
  if(!url||!key)return {configured:false};
  const u=new URL(url);if(u.protocol!=='https:'||!u.hostname.endsWith('.supabase.co')||u.pathname!=='/'||u.username||u.password)throw Error('Supabase 配置地址无效');

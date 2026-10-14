@@ -12,7 +12,7 @@ async function check(){if(!app.isPackaged){emit({state:'unavailable',message:'�
 app.on('second-instance',async()=>{try{const installed=JSON.parse(await fs.readFile(path.join(app.getAppPath(),'package.json'),'utf8'));if(installed.version!==app.getVersion()){backend?.kill();app.relaunch();app.quit();return}}catch{}window?.show();window?.focus()});
 app.whenReady().then(async()=>{
  const assets=app.getAppPath(),data=path.join(app.getPath('userData'),'data');await fs.mkdir(data,{recursive:true});
- try{await fs.access(path.join(data,'sources.json'))}catch(error){if(error.code!=='ENOENT')throw error;await fs.writeFile(path.join(data,'sources.json'),'[]',{flag:'wx'})}
+ for(const [name,defaultFile,empty]of [['sources.json',path.join(assets,'data/sources.example.json'),'[]'],['cloud.json',path.join(assets,'public/client-defaults/cloud.json'),'{}']]){try{const saved=await fs.readFile(path.join(data,name),'utf8');if(saved.trim()===empty)await fs.copyFile(defaultFile,path.join(data,name))}catch(error){if(error.code!=='ENOENT')throw error;await fs.copyFile(defaultFile,path.join(data,name),require('node:fs').constants.COPYFILE_EXCL)}}
  let base;let recovering=false,lastRecovery=0;
  const startBackend=async()=>{if(closing)throw Error('应用正在关闭');const port=await freePort();base='http://127.0.0.1:'+port;
  const env={...process.env,PORT:String(port),HOST:'127.0.0.1',STREAMDESK_DATA:data,STREAMDESK_DIST:path.join(assets,'dist')};for(const key of ['STREAMDESK_SOURCES','STREAMDESK_RESULT_CACHE','STREAMDESK_SECURITY'])delete env[key];

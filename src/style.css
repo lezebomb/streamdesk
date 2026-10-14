@@ -20,3 +20,6 @@
 .poster-unavailable::before{content:'暂无封面';position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:12px}.poster-unavailable{background:linear-gradient(135deg,#e5eeee,#f4f8f8)}
 
 .poster-loading::before{content:'封面加载中';position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:12px}
+html,body{min-height:100%;max-width:100%;overflow-x:clip}input,button{max-width:100%}
+#client-update{display:grid;gap:8px;justify-items:start;min-width:0}#client-update button{white-space:nowrap}#client-update p{overflow-wrap:anywhere}
+@media(max-width:640px){.app-shell{padding-top:calc(11px + env(safe-area-inset-top,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}.search{width:100%;gap:9px}.search input{font-size:16px}dialog{max-height:calc(100dvh - 32px);overflow-y:auto}#account-dialog{padding:20px}.auth-primary{min-height:44px}}
