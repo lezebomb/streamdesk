@@ -8,10 +8,11 @@ import {discoverRenderers,castEpisode,rendererAction} from './casting.mjs';
 import {resultCache} from './result-cache.mjs';
 import {cloudConfig} from './cloud-config.mjs';
 import {catalogueService} from './catalogue-service.mjs';
-const dataRoot=process.env.STREAMDESK_DATA||'data';
+import {runtimeConfig} from './runtime-config.mjs';
+const dataRoot=runtimeConfig.dataRoot;
 const catalogue=catalogueService({indexFile:path.join(dataRoot,'catalogue-index.json'),metadataFile:path.join(dataRoot,'metadata-catalogue.json')});
-const results=resultCache(process.env.STREAMDESK_RESULT_CACHE||path.join(dataRoot,'catalog-results.json'));
-const port=Number(process.env.PORT||4173),host=process.env.HOST||'127.0.0.1';
+const results=resultCache(runtimeConfig.resultCacheFile);
+const port=runtimeConfig.port,host=runtimeConfig.host;
 if(!['127.0.0.1','::1'].includes(host))throw Error('StreamDesk 个人服务只允许绑定回环地址');
 const ratingChecks=new Map();
 const dev=process.argv.includes('--dev');
@@ -33,6 +34,7 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&url.pathname==='/api/cloud-config'){send(res,200,await cloudConfig());return}
   const start=performance.now(),controller=new AbortController();req.on('aborted',()=>controller.abort());res.on('close',()=>{if(!res.writableEnded)controller.abort()});
   const sources=await readSources();
+  if(req.method==='GET'&&url.pathname==='/api/runtime-status'){send(res,200,{dataId:createHash('sha256').update(dataRoot).digest('hex').slice(0,16),sourceCount:sources.length,cloudConfigured:(await cloudConfig()).configured});return}
   const sourceFingerprint=createHash('sha256').update(JSON.stringify(sources)).digest('hex');
   if(req.method==='GET'&&url.pathname==='/api/sources'){send(res,200,{sources:sources.map(({id,name,type,enabled,priority})=>({id,name,type,enabled,priority}))});return}
   if(req.method==='POST'&&url.pathname==='/api/posters'){const data=await body(req);if(typeof data.source!=='string'||data.source.length>40||typeof data.id!=='string'||data.id.length>80||!Array.isArray(data.failed)||data.failed.length>4||data.failed.some(u=>typeof u!=='string'||u.length>2048))throw Error('封面请求无效');send(res,200,{urls:await catalogue.posters(data.source,data.id,sources,data.failed)});return}
@@ -75,7 +77,7 @@ const server=http.createServer(async(req,res)=>{
   send(res,404,{error:'接口不存在'});return;
  }
  if(vite){vite.middlewares(req,res);return;}
- const root=path.resolve(process.env.STREAMDESK_DIST||'dist');let filename=path.resolve(root,'.'+decodeURIComponent(url.pathname));if(!filename.startsWith(root+path.sep)&&filename!==root)throw new Error('路径无效');
+ const root=runtimeConfig.distRoot;let filename=path.resolve(root,'.'+decodeURIComponent(url.pathname));if(!filename.startsWith(root+path.sep)&&filename!==root)throw new Error('路径无效');
  try{if((await fs.stat(filename)).isDirectory())filename=path.join(filename,'index.html')}catch{filename=path.join(root,'index.html')}
  const file=await fs.readFile(filename);res.writeHead(200,{'Content-Type':mime[path.extname(filename)]||'application/octet-stream','Cache-Control':path.basename(filename)==='sw.js'?'no-cache':'public,max-age=0'});res.end(file);
  }catch(e){if(!res.headersSent)send(res,400,{error:e.message});else res.destroy();}
