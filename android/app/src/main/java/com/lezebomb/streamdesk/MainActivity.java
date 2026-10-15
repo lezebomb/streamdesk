@@ -3,17 +3,19 @@ package com.lezebomb.streamdesk;
 import android.app.Activity;import android.os.Bundle;import android.net.Uri;import android.content.Intent;import android.content.pm.PackageInfo;import android.content.pm.PackageManager;import android.view.View;import android.view.WindowManager;import android.webkit.*;import android.widget.FrameLayout;
 import androidx.webkit.WebViewAssetLoader;import androidx.webkit.WebViewCompat;import androidx.webkit.WebViewFeature;import androidx.core.content.FileProvider;
 import androidx.core.view.ViewCompat;import androidx.core.view.WindowCompat;import androidx.core.view.WindowInsetsCompat;import androidx.core.graphics.Insets;
+import androidx.core.view.WindowInsetsControllerCompat;import android.content.pm.ActivityInfo;
 import org.json.*;import java.io.*;import java.net.*;import java.nio.charset.StandardCharsets;import java.nio.file.Files;import java.nio.file.StandardCopyOption;import java.security.MessageDigest;import java.util.*;import java.util.concurrent.*;
 
 public class MainActivity extends Activity {
  private static final String ORIGIN="https://appassets.androidplatform.net",HOME=ORIGIN+"/assets/index.html";
  private final ExecutorService workers=Executors.newFixedThreadPool(3);private WebView web;private FrameLayout root;private View fullScreen;private WebChromeClient.CustomViewCallback fullScreenCallback;
  private PosterCache posterCache;private JSONObject config;private JSONObject updateState;private JSONObject updateAsset;private File verifiedApk;
+ private boolean playerFullscreen=false;private int previousOrientation,previousCutout;
  @Override public void onCreate(Bundle state){super.onCreate(state);posterCache=new PosterCache(getCacheDir());try{prepareConfig();updateState=new JSONObject().put("state","idle").put("version",BuildConfig.VERSION_NAME);}catch(Exception e){throw new IllegalStateException("私人配置格式无效",e);}
   root=new FrameLayout(this);web=new WebView(this);root.addView(web,new FrameLayout.LayoutParams(-1,-1));setContentView(root);
   WindowCompat.setDecorFitsSystemWindows(getWindow(),false);root.setBackgroundColor(0xfff5faf9);
   WindowCompat.getInsetsController(getWindow(),root).setAppearanceLightStatusBars(true);WindowCompat.getInsetsController(getWindow(),root).setAppearanceLightNavigationBars(true);
-  ViewCompat.setOnApplyWindowInsetsListener(root,(view,insets)->{Insets bars=insets.getInsets(WindowInsetsCompat.Type.systemBars()|WindowInsetsCompat.Type.displayCutout()),ime=insets.getInsets(WindowInsetsCompat.Type.ime());view.setPadding(bars.left,bars.top,bars.right,Math.max(bars.bottom,ime.bottom));return WindowInsetsCompat.CONSUMED;});ViewCompat.requestApplyInsets(root);
+  ViewCompat.setOnApplyWindowInsetsListener(root,(view,insets)->{Insets bars=insets.getInsets(WindowInsetsCompat.Type.systemBars()|WindowInsetsCompat.Type.displayCutout()),ime=insets.getInsets(WindowInsetsCompat.Type.ime());if(playerFullscreen){view.setPadding(0,0,0,0);Insets cutout=insets.getInsets(WindowInsetsCompat.Type.displayCutout());float density=getResources().getDisplayMetrics().density;web.evaluateJavascript("document.documentElement.style.setProperty('--player-safe-left','"+(cutout.left/density)+"px');document.documentElement.style.setProperty('--player-safe-right','"+(cutout.right/density)+"px');",null);}else view.setPadding(bars.left,bars.top,bars.right,Math.max(bars.bottom,ime.bottom));return WindowInsetsCompat.CONSUMED;});ViewCompat.requestApplyInsets(root);
   WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);WebSettings settings=web.getSettings();settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);settings.setAllowFileAccess(false);settings.setAllowContentAccess(false);settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);settings.setMediaPlaybackRequiresUserGesture(false);
   final WebViewAssetLoader assets=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
   web.setWebViewClient(new WebViewClient(){
@@ -24,8 +26,8 @@ public class MainActivity extends Activity {
   });
   web.setWebChromeClient(new WebChromeClient(){
    @Override public void onPermissionRequest(PermissionRequest request){request.deny();}
-   @Override public void onShowCustomView(View view,CustomViewCallback callback){if(fullScreen!=null){callback.onCustomViewHidden();return;}fullScreen=view;fullScreenCallback=callback;web.setVisibility(View.GONE);root.addView(view,new FrameLayout.LayoutParams(-1,-1));getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);}
-   @Override public void onHideCustomView(){if(fullScreen==null)return;root.removeView(fullScreen);fullScreen=null;web.setVisibility(View.VISIBLE);getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);fullScreenCallback.onCustomViewHidden();}
+   @Override public void onShowCustomView(View view,CustomViewCallback callback){if(fullScreen!=null){callback.onCustomViewHidden();return;}fullScreen=view;fullScreenCallback=callback;web.setVisibility(View.GONE);root.addView(view,new FrameLayout.LayoutParams(-1,-1));setPlayerFullscreen(true);}
+   @Override public void onHideCustomView(){if(fullScreen==null)return;root.removeView(fullScreen);fullScreen=null;web.setVisibility(View.VISIBLE);setPlayerFullscreen(false);CustomViewCallback callback=fullScreenCallback;fullScreenCallback=null;callback.onCustomViewHidden();}
   });
   if(!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))throw new IllegalStateException("系统 WebView 需要更新才能安全运行 StreamDesk");
   WebViewCompat.addWebMessageListener(web,"streamdeskNative",Collections.singleton(ORIGIN),(view,message,origin,mainFrame,reply)->{
@@ -46,10 +48,17 @@ public class MainActivity extends Activity {
    case "config":return config;
    case "http":{URI uri=new URI(request.getString("url"));boolean allowed=false;JSONArray sources=config.getJSONArray("sources");for(int i=0;i<sources.length();i++){URI api=new URI(sources.getJSONObject(i).getString("api"));if(api.getScheme().equals(uri.getScheme())&&api.getHost().equalsIgnoreCase(uri.getHost())&&port(api)==port(uri)&&resourcePath(api).equals(resourcePath(uri)))allowed=true;}if(!allowed)throw new IOException("Origin denied");String body=readPublic(uri,2*1024*1024);posterCache.response(body);return body;}
    case "cache-write":{String data=request.getString("data");if(data.length()>8*1024*1024)throw new IOException("Cache too large");JSONArray parsed=new JSONArray(data);posterCache.films(parsed);if(parsed.length()>5000)throw new IOException("Too many records");File tmp=new File(getFilesDir(),"catalogue-index.tmp");Files.write(tmp.toPath(),data.getBytes(StandardCharsets.UTF_8));Files.move(tmp.toPath(),new File(getFilesDir(),"catalogue-index.json").toPath(),StandardCopyOption.REPLACE_EXISTING);return true;}
+   case "fullscreen":{boolean active=request.getBoolean("active");FutureTask<Boolean> task=new FutureTask<>(()->{setPlayerFullscreen(active);return true;});runOnUiThread(task);return task.get(5,TimeUnit.SECONDS);}
    case "screen":{boolean playing=request.optBoolean("playing");runOnUiThread(()->{if(playing)getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);});return true;}
    case "update":return update(request.getString("action"));
    default:throw new IOException("Command denied");
   }
+ }
+ private void setPlayerFullscreen(boolean active){
+  if(playerFullscreen==active)return;playerFullscreen=active;WindowInsetsControllerCompat controller=WindowCompat.getInsetsController(getWindow(),root);WindowManager.LayoutParams params=getWindow().getAttributes();
+  if(active){previousOrientation=getRequestedOrientation();previousCutout=params.layoutInDisplayCutoutMode;params.layoutInDisplayCutoutMode=WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;getWindow().setAttributes(params);setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);root.setBackgroundColor(0xff000000);root.setPadding(0,0,0,0);controller.setAppearanceLightStatusBars(false);controller.setAppearanceLightNavigationBars(false);controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);controller.hide(WindowInsetsCompat.Type.systemBars());}
+  else{setRequestedOrientation(previousOrientation);params.layoutInDisplayCutoutMode=previousCutout;getWindow().setAttributes(params);root.setBackgroundColor(0xfff5faf9);controller.show(WindowInsetsCompat.Type.systemBars());controller.setAppearanceLightStatusBars(true);controller.setAppearanceLightNavigationBars(true);}
+  ViewCompat.requestApplyInsets(root);
  }
  private int port(URI uri){return uri.getPort()<0?443:uri.getPort();}
  private String resourcePath(URI uri){String p=uri.getRawPath();return p==null||p.isEmpty()?"/":p;}
@@ -77,7 +86,7 @@ public class MainActivity extends Activity {
  }
  private JSONObject status(String state,String message)throws Exception{return updateState=new JSONObject().put("state",state).put("version",BuildConfig.VERSION_NAME).put("message",message);}
  private String hex(byte[] bytes){StringBuilder s=new StringBuilder();for(byte b:bytes)s.append(String.format(Locale.ROOT,"%02x",b));return s.toString();}
- @Override public void onBackPressed(){if(fullScreen!=null){web.getWebChromeClient().onHideCustomView();return;}web.evaluateJavascript("if(!document.querySelector('#watch').hidden)document.querySelector('#close-watch').click();else if(!document.querySelector('#discover-view').hidden){}else document.querySelector('.bottom-nav [data-view=discover]').click()",null);}
+ @Override public void onBackPressed(){if(fullScreen!=null){web.getWebChromeClient().onHideCustomView();return;}if(playerFullscreen){setPlayerFullscreen(false);web.evaluateJavascript("window.dispatchEvent(new Event('streamdesk-fullscreen-exit'))",null);return;}web.evaluateJavascript("if(!document.querySelector('#watch').hidden)document.querySelector('#close-watch').click();else if(!document.querySelector('#discover-view').hidden){}else document.querySelector('.bottom-nav [data-view=discover]').click()",null);}
  @Override protected void onPause(){web.evaluateJavascript("window.streamdesk?.player.video.pause()",null);getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);super.onPause();}
  @Override protected void onDestroy(){workers.shutdownNow();posterCache.close();web.destroy();super.onDestroy();}
 }

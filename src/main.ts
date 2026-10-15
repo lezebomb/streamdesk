@@ -10,6 +10,7 @@ import {candidateScore,candidateKey,uniqueCandidates,mediaDomain,type Candidate}
 import {shell,icon} from './view';
 import {filterFilms,selectedGenres,type Filters} from '../shared/discovery';
 import {bindVideoGestures} from './gestures';
+import {bindVideoFullscreen} from './fullscreen';
 import {bindPosters,posterMarkup} from './posters';
 import {bindVideoKeyboard} from './keyboard';
 import {appendFilms} from '../shared/result-list';
@@ -162,7 +163,7 @@ async function probeLines(signal:AbortSignal,epoch:number){
  const p=await probeMedia(c.episode,AbortSignal.any([signal,AbortSignal.timeout(5000)]));if(signal.aborted||epoch!==linesEpoch)return;probeCache.set(c.episode.url,p);if(probeCache.size>100)probeCache.delete(probeCache.keys().next().value!);c.probe=p;renderLines();});probing=work;
  try{await work}finally{if(probing===work)probing=null}
 }
-$('#enhance-fullscreen').onclick=()=>{const wrapper=$('.video-wrap');if(document.fullscreenElement)void document.exitFullscreen().catch(()=>{});else if(wrapper.requestFullscreen)void wrapper.requestFullscreen().catch(()=>toast('当前浏览器无法启用增强全屏'));else toast('可使用原生播放器全屏，增强暂时回退原画')};
+bindVideoFullscreen($('.video-wrap'),toast);
 bindVideoGestures($('.video-wrap'),$<HTMLVideoElement>('#video'),$('#gesture-hint'));
 bindVideoKeyboard(player.video,()=>!$('#watch').hidden&&episode?.kind!=='embed',holding=>{$('#gesture-hint').hidden=!holding;$('#gesture-hint').textContent=holding?'2× 倍速播放':''});
 bindCasting(()=>({film:current,episode,position:player.resumePosition()}),()=>player.video.pause(),toast);

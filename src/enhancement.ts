@@ -76,7 +76,7 @@ export class VideoEnhancement {
    if(plan.profile==='off'||!plan.width||v.videoWidth*v.videoHeight>1920*1080){this.reason=plan.profile==='off'?plan.reason:'大于 1080p 保持原画，避免额外上传与色彩损失';this.hide();return}
    // Do not leave a stale processed frame on screen when a high-FPS stream exceeds budget.
    if(this.lastFrameAt&&now-this.lastFrameAt<15){this.hide();return}this.lastFrameAt=now;
-   const ratio=v.videoWidth/v.videoHeight,height=Math.min(box.height,box.width/ratio),width=height*ratio;
+   const ratio=v.videoWidth/v.videoHeight,height=getComputedStyle(v).objectFit==='cover'?Math.max(box.height,box.width/ratio):Math.min(box.height,box.width/ratio),width=height*ratio;
    canvas.style.width=width+'px';canvas.style.height=height+'px';canvas.style.left=(box.width-width)/2+'px';canvas.style.top=(box.height-height)/2+'px';
    if(canvas.width!==plan.width||canvas.height!==plan.height){canvas.width=plan.width;canvas.height=plan.height;gl.viewport(0,0,plan.width,plan.height);this.renderSize=[plan.width,plan.height]}
    this.pollTimers();const query=this.timer&&this.queries.length<4?gl.createQuery():null;if(query)gl.beginQuery(this.timer!.TIME_ELAPSED_EXT,query);

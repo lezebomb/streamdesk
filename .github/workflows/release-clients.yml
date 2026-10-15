@@ -37,5 +37,5 @@ jobs:
           $installer = "artifacts/windows/StreamDesk-Setup-$version.exe"
           if (!(Test-Path $installer)) { throw 'Installer missing' }
           (Get-FileHash -Algorithm SHA256 $installer).Hash | Set-Content "$installer.sha256"
-          gh release create $tag $installer "$installer.sha256" "$installer.blockmap" artifacts/windows/latest.yml --target $env:GITHUB_SHA --title "StreamDesk $version" --notes 'Windows installation build. Updates preserve user data. Personal source configuration is excluded; Android packages require the established private signing identity.'
+          gh release create $tag $installer "$installer.sha256" "$installer.blockmap" artifacts/windows/latest.yml --target $env:GITHUB_SHA --title "StreamDesk $version" --notes 'Installation build with public source defaults and the publishable account connection. Updates preserve user data. Private account sessions, signing keys and personal records are excluded. Android packages use the established private signing identity.'
           if ($LASTEXITCODE -ne 0) { throw 'Release publish failed' }

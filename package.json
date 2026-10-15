@@ -1,6 +1,6 @@
 {
   "name": "streamdesk-personal",
-  "version": "0.6.8",
+  "version": "0.6.9",
   "private": true,
   "type": "module",
   "license": "AGPL-3.0-or-later",
@@ -27,7 +27,8 @@
     "test:experience": "node scripts/experience.mjs",
     "desktop:dev": "electron .",
     "desktop:build": "node scripts/build-desktop.mjs",
-    "android:prepare": "node scripts/prepare-android.mjs"
+    "android:prepare": "node scripts/prepare-android.mjs",
+    "test:mobile-player": "node scripts/test-mobile-player.mjs"
   },
   "dependencies": {
     "@phosphor-icons/web": "^2.1.2",

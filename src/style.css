@@ -23,3 +23,9 @@
 html,body{min-height:100%;max-width:100%;overflow-x:clip}input,button{max-width:100%}
 #client-update{display:grid;gap:8px;justify-items:start;min-width:0}#client-update button{white-space:nowrap}#client-update p{overflow-wrap:anywhere}
 @media(max-width:640px){.app-shell{padding-top:calc(11px + env(safe-area-inset-top,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}.search{width:100%;gap:9px}.search input{font-size:16px}dialog{max-height:calc(100dvh - 32px);overflow-y:auto}#account-dialog{padding:20px}.auth-primary{min-height:44px}}
+
+/* Native fullscreen owns the window; browser fullscreen uses the same layout. */
+.video-wrap.player-fullscreen{position:fixed;inset:0;width:100%;height:100%;height:100dvh;max-width:none;aspect-ratio:auto;border-radius:0;z-index:100;background:#000}
+.player-fullscreen video{object-fit:contain}.player-fullscreen.fullscreen-fill video{object-fit:cover}
+.player-fullscreen .mobile-controls{padding-left:max(16px,env(safe-area-inset-left,0px),var(--player-safe-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px),var(--player-safe-right,0px));padding-bottom:max(8px,env(safe-area-inset-bottom,0px))}
+.mobile-controls input{height:30px;cursor:pointer}.touch-fit{font-size:12px;white-space:nowrap}.touch-control-row #touch-time{flex:1}.player-fullscreen .gesture-hint{top:max(15px,env(safe-area-inset-top,0px))}
