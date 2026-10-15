@@ -22,3 +22,5 @@ npm run test:mobile-player
 2026-10-15 已在 Mate 60 的安装 APK 验证定点跳转、横屏铺满、原生返回及按钮退出、播放位置与 ABR 保持；一加 Ace 6T 尚未实测本版本。证据仅保存在本地 reports，未上传个人资料。本轮为控制交互修复，没有重复全库搜索、长时间播放、功耗和温度测试。
 
 参考：[Android 沉浸模式](https://developer.android.com/develop/ui/views/layout/immersive)、[Screen Orientation](https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/lock)。
+
+0.6.10：正式版实机操作补充发现精简图标集缺少退出全屏字形，现采用已安装 Phosphor 2.1.2 的原始字形补齐；浏览器验证同时检查按钮伪元素是否实际有内容。暂停以及暂停后跳转完成显示“已暂停”，故障终止状态不会被暂停事件覆盖。

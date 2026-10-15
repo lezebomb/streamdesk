@@ -46,3 +46,6 @@
 .ph-arrows-out:before {
   content: "\e0a2";
 }
+.ph-arrows-in:before {
+  content: "\e09a";
+}

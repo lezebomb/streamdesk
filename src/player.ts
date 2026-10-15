@@ -32,13 +32,13 @@ export class Player {
   on('waiting',()=>{if(this.metrics.firstFrameMs!==null&&!v.paused&&!v.seeking&&!this.pendingSeek&&!this.stallAt){this.stallAt=performance.now();this.metrics.stalls++;this.status('缓冲中…')}});
   on('playing',()=>{this.closeStall();this.status('播放中')});
   on('play',()=>{this.needsUserPlay=false});
-  on('pause',()=>this.closeStall());
+  on('pause',()=>{this.closeStall();if(!this.settled&&!v.ended)this.status('已暂停')});
   on('seeking',()=>{this.closeStall();this.fpsAnchor=null;if(v.currentTime>0)this.lastPosition=v.currentTime;this.seekAt=performance.now();this.pendingSeek=true;this.status('正在定位…')});
   on('seeked',()=>{this.pendingSeek=false});
   on('error',()=>{const code=v.error?.code;this.metrics.errors.push({type:'native',details:`code=${code}`,at:performance.now()-this.started});terminal(`媒体错误 ${code??''}`)});
   on('ended',()=>this.status('本集播放完成'));
-  const frame=(_time:number,meta:VideoFrameCallbackMetadata)=>{if(this.settled)return;const now=performance.now();if(this.metrics.firstFrameMs===null){this.metrics.firstFrameMs=now-this.started;this.status('播放中')}
-   if(this.seekAt&&!v.seeking&&!this.pendingSeek){this.metrics.seekMs.push(now-this.seekAt);this.seekAt=0;this.status('播放中')}
+  const frame=(_time:number,meta:VideoFrameCallbackMetadata)=>{if(this.settled)return;const now=performance.now();if(this.metrics.firstFrameMs===null){this.metrics.firstFrameMs=now-this.started;this.status(v.paused?'已暂停':'播放中')}
+   if(this.seekAt&&!v.seeking&&!this.pendingSeek){this.metrics.seekMs.push(now-this.seekAt);this.seekAt=0;this.status(v.paused?'已暂停':'播放中')}
    if(!this.fpsAnchor)this.fpsAnchor={frames:meta.presentedFrames,mediaTime:meta.mediaTime};
    else if(meta.mediaTime-this.fpsAnchor.mediaTime>=1){const elapsed=meta.mediaTime-this.fpsAnchor.mediaTime;this.fps=(meta.presentedFrames-this.fpsAnchor.frames)/elapsed;this.fpsAnchor={frames:meta.presentedFrames,mediaTime:meta.mediaTime}}
    this.metrics.frames++;this.enhancement.frame(now,meta,this.contentAnime,this.hls?.levels[this.hls.currentLevel]?.attrs['VIDEO-RANGE']==='PQ'||this.hls?.levels[this.hls.currentLevel]?.attrs['VIDEO-RANGE']==='HLG',this.started,this.fps||30);this.frameId=v.requestVideoFrameCallback(frame);
