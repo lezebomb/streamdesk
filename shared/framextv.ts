@@ -58,7 +58,9 @@ export function createFrameXAdapter(transport:CmsTransport):SourceAdapter {
    }
    const f=shape(raw,s,season);if(!f)throw Error('FrameXTV 详情格式无效');if(f.releasePending)throw Error('本片尚未上映');
    const episodes:Episode[]=identity.type==='movie'?[{key:'feature',label:'正片',kind:'embed',url:frameXEmbedUrl(identity.id)}]:eps.filter(e=>idNumber(e.number??e.episode_number)&&released(e.air_date)&&(e.season_number===undefined||Number(e.season_number)===f.season)).map(e=>{const n=Number(e.number??e.episode_number),label=`第${n}集`;return {...episodeIdentity(label,f.season),label,kind:'embed',url:frameXEmbedUrl(identity.id,f.season,n)}});
-   f.groups=frameXProviders.map(([provider,name])=>({id:provider,name,unsupported:0,episodes:episodes.map(e=>({...e,groupId:provider,url:frameXEmbedUrl(identity.id,e.season,e.number,provider)}))}));f.episodes=f.groups[0].episodes;return f;
+   // The upstream automatic choice returned another episode during a TV check.
+   // Start TV via Headhunter; retain explicit lanes without claiming correctness.
+   f.groups=frameXProviders.map(([provider,name])=>({id:provider,name:provider==='auto'&&identity.type==='tv'?'推荐 · Headhunter XXXI':name,unsupported:0,episodes:episodes.map(e=>({...e,groupId:provider,url:frameXEmbedUrl(identity.id,e.season,e.number,provider==='auto'&&identity.type==='tv'?'headhunter':provider)}))}));f.episodes=f.groups[0].episodes;return f;
   }
  };
 }

@@ -10,7 +10,7 @@ test('multilingual search keeps requested and related seasons without inventing 
 });
 test('embed groups retain exact episode and season, exclude future episodes and never claim media URLs',async()=>{
  const a=createFrameXAdapter(async(s,p)=>p._endpoint==='details'?{...show,list:[]}:{success:true,number:4,list:[],episodes:[{number:1,season_number:4,air_date:'2022-05-27'},{number:2,season_number:4,air_date:'2099-01-01'},{number:3,season_number:3,air_date:'2022-01-01'}]});
- const f=await a.detail(source,'tv:42:s4',signal());assert.equal(f.episodes.length,1);assert.equal(f.groups.length,frameXProviders.length);for(const g of f.groups){const e=g.episodes[0];assert.equal(e.kind,'embed');assert.equal(e.season,4);assert.equal(e.number,1);assert.equal(matchEpisode(f.episodes[0],g.episodes),e);assert.match(e.url,/\/embed\/42\/4\/1\?/)}assert.equal(f.year,'2022');
+ const f=await a.detail(source,'tv:42:s4',signal());assert.equal(f.episodes.length,1);assert.equal(new URL(f.episodes[0].url).searchParams.get("provider"),"headhunter");assert.equal(f.groups.length,frameXProviders.length);for(const g of f.groups){const e=g.episodes[0];assert.equal(e.kind,'embed');assert.equal(e.season,4);assert.equal(e.number,1);assert.equal(matchEpisode(f.episodes[0],g.episodes),e);assert.match(e.url,/\/embed\/42\/4\/1\?/)}assert.equal(f.year,'2022');
  await assert.rejects(()=>a.detail(source,'tv:42:s3',signal()),/该季/);await assert.rejects(()=>a.detail(source,'movie:43',signal()),/身份/);
 });
 test('only observed metadata routes and provider IDs are accepted; media resolution is not exposed',()=>{

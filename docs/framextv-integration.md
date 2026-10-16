@@ -12,7 +12,7 @@
 
 ## 线路
 
-2026-10-16 公开 `/api/providers` 列出 `miner`、`headhunter`、`valkyrie`、`hog_rider`、`lavahound`、`super_barbarian`、`bowler`、`titan`。`backup` 同时出现在当前公开 Embed 播放器中。应用提供自动入口和上述九条指定入口。它们属于同一个聚合服务，不能计作九个独立服务；“Available”、4K/FHD 名称均不代表本片实测成功或原生分辨率。
+2026-10-16 公开 `/api/providers` 列出 `miner`、`headhunter`、`valkyrie`、`hog_rider`、`lavahound`、`super_barbarian`、`bowler`、`titan`。`backup` 同时出现在当前公开 Embed 播放器中。应用提供推荐入口和上述九条指定入口。电影默认采用来源自动选择；电视剧默认指定 Headhunter XXXI。实机发现来源自动选择的 Miner 曾把 S4E1 返回为疑似末集，故不采用它作为剧集默认。其他指定入口仍按未验证处理；宿主不能校验其内部真实媒体身份。它们属于同一个聚合服务，不能计作九个独立服务；“Available”、4K/FHD 名称均不代表本片实测成功或原生分辨率。
 
 第三方查询和 iframe 都不接收本应用账号凭据、云端配置或观看历史列表。iframe 保留 sandbox，禁止弹窗、顶层跳转和下载；原生桥只允许主文档自己的 origin。服务器与 Android 仅放行三个已知元数据路径，不提供任意代理或降低 TLS 检查。
 
