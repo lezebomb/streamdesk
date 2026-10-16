@@ -1,7 +1,7 @@
 import {playbackTime} from '../shared/gesture-policy';
 
 // Commit before releasing scrubbing: pointerup can precede a range's native change.
-export function bindSeekBar(seek:HTMLInputElement,video:HTMLVideoElement,time:HTMLElement,changed:(scrubbing:boolean)=>void){
+export function bindSeekBar(seek:HTMLInputElement,video:Pick<HTMLVideoElement,'duration'|'currentTime'|'addEventListener'>,time:HTMLElement,changed:(scrubbing:boolean)=>void){
  let pointer:number|undefined,scrubbing=false;
  const preview=()=>{time.textContent=playbackTime(Number(seek.value))+' / '+playbackTime(video.duration)};
  const update=()=>{seek.disabled=!Number.isFinite(video.duration)||video.duration<=0;if(!scrubbing){seek.max=String(seek.disabled?0:video.duration);seek.value=String(video.currentTime||0);preview()}};

@@ -45,22 +45,26 @@ export function createFrameXAdapter(transport:CmsTransport):SourceAdapter {
    return out.sort((a,b)=>Number(b.season===wanted?.season)-Number(a.season===wanted?.season));
   },
   async detail(s,key,signal){
-   const identity=parseId(key),raw=await get(s,'details',{id:identity.id,type:identity.type},signal);
+   const identity=parseId(key);
+   // Search results already identify the season. Fetch its two metadata records
+   // together so opening a result does not pay two serial network round trips.
+   const [raw,knownSeason]=await Promise.all([get(s,'details',{id:identity.id,type:identity.type},signal),identity.season?get(s,'season',{id:identity.id,season:String(identity.season)},signal):Promise.resolve(undefined)]);
    if(String(raw.id)!==identity.id||raw.type!==identity.type)throw Error('FrameXTV 详情身份不匹配');
    let season:Record<string,unknown>|undefined,eps:Record<string,unknown>[]=[];
    if(identity.type==='tv'){
     const seasons=(Array.isArray(raw.seasons)?raw.seasons:[]) as Record<string,unknown>[];
     const n=identity.season??Number(seasons.find(s=>Number(s.number??s.season_number)>0&&released(s.air_date))?.number);
     season=seasons.find(s=>Number(s.number??s.season_number)===n);if(!season||!released(season.air_date))throw Error('该季尚未播出或无法核实');
-    const data=await get(s,'season',{id:identity.id,season:String(n)},signal);
+    const data=knownSeason??await get(s,'season',{id:identity.id,season:String(n)},signal);
     if(Number(data.number??data.season_number)!==n)throw Error('FrameXTV 返回了其他季');
     eps=(Array.isArray(data.episodes)?data.episodes:[]) as Record<string,unknown>[];
    }
    const f=shape(raw,s,season);if(!f)throw Error('FrameXTV 详情格式无效');if(f.releasePending)throw Error('本片尚未上映');
    const episodes:Episode[]=identity.type==='movie'?[{key:'feature',label:'正片',kind:'embed',url:frameXEmbedUrl(identity.id)}]:eps.filter(e=>idNumber(e.number??e.episode_number)&&released(e.air_date)&&(e.season_number===undefined||Number(e.season_number)===f.season)).map(e=>{const n=Number(e.number??e.episode_number),label=`第${n}集`;return {...episodeIdentity(label,f.season),label,kind:'embed',url:frameXEmbedUrl(identity.id,f.season,n)}});
-   // The upstream automatic choice returned another episode during a TV check.
-   // Start TV via Headhunter; retain explicit lanes without claiming correctness.
-   f.groups=frameXProviders.map(([provider,name])=>({id:provider,name:provider==='auto'&&identity.type==='tv'?'推荐 · Headhunter XXXI':name,unsupported:0,episodes:episodes.map(e=>({...e,groupId:provider,url:frameXEmbedUrl(identity.id,e.season,e.number,provider==='auto'&&identity.type==='tv'?'headhunter':provider)}))}));f.episodes=f.groups[0].episodes;return f;
+   // Avoid waiting for the aggregator to cycle unrelated lanes. TV's upstream
+   // automatic Miner route also returned another episode during a live check.
+   const preferred=identity.type==='tv'?'headhunter':'miner',preferredName=identity.type==='tv'?'Headhunter XXXI':'Miner XIX';
+   f.groups=frameXProviders.map(([provider,name])=>({id:provider,name:provider==='auto'?'推荐 · '+preferredName:name,unsupported:0,episodes:episodes.map(e=>({...e,groupId:provider,url:frameXEmbedUrl(identity.id,e.season,e.number,provider==='auto'?preferred:provider)}))}));f.episodes=f.groups[0].episodes;return f;
   }
  };
 }

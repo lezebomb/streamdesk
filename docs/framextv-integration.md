@@ -12,7 +12,7 @@
 
 ## 线路
 
-2026-10-16 公开 `/api/providers` 列出 `miner`、`headhunter`、`valkyrie`、`hog_rider`、`lavahound`、`super_barbarian`、`bowler`、`titan`。`backup` 同时出现在当前公开 Embed 播放器中。应用提供推荐入口和上述九条指定入口。电影默认采用来源自动选择；电视剧默认指定 Headhunter XXXI。实机发现来源自动选择的 Miner 曾把 S4E1 返回为疑似末集，故不采用它作为剧集默认。其他指定入口仍按未验证处理；宿主不能校验其内部真实媒体身份。它们属于同一个聚合服务，不能计作九个独立服务；“Available”、4K/FHD 名称均不代表本片实测成功或原生分辨率。
+2026-10-16 公开 `/api/providers` 列出 `miner`、`headhunter`、`valkyrie`、`hog_rider`、`lavahound`、`super_barbarian`、`bowler`、`titan`。`backup` 同时出现在当前公开 Embed 播放器中。应用提供推荐入口和上述九条指定入口。电影默认指定 Miner XIX；电视剧默认指定 Headhunter XXXI。实机发现来源自动选择的 Miner 曾把 S4E1 返回为疑似末集，故不采用它作为剧集默认。其他指定入口仍按未验证处理；宿主不能校验其内部真实媒体身份。它们属于同一个聚合服务，不能计作九个独立服务；“Available”、4K/FHD 名称均不代表本片实测成功或原生分辨率。
 
 第三方查询和 iframe 都不接收本应用账号凭据、云端配置或观看历史列表。iframe 保留 sandbox，禁止弹窗、顶层跳转和下载；原生桥只允许主文档自己的 origin。服务器与 Android 仅放行三个已知元数据路径，不提供任意代理或降低 TLS 检查。
 
@@ -20,8 +20,10 @@
 
 仅处理同时匹配 iframe 窗口、`https://framextv.xyz` origin 和有限数值范围的 `frameXTV:timeupdate`。切换线路时换用新的 iframe 窗口，拒绝旧窗口消息。URL 的 `t` 恢复未生效时，仅通过文档中的 `seek` 命令向精确 origin 尝试一次，等待返回进度确认后再更新历史。
 
-iframe 加载、ready 和进度事件均不写入本地 hls.js 的首帧、解码分辨率、ABR 或片段下载统计。无进度 30 秒显示切线提示，不宣称已出画。不能可靠接管内部的暂停状态、画面增强、下载、投屏及手势，也不能保证第三方播放器始终无站内广告。宿主不添加广告，保留自己的直接媒体播放功能。
+iframe 加载、ready 和进度事件均不写入本地 hls.js 的首帧、解码分辨率、ABR 或片段下载统计。无进度 30 秒显示切线提示，不宣称已出画。手机端通过公开 SDK 接入宿主手势与进度条，隐藏来源控件并阻止手势穿透：单击显隐、双击播放暂停、右侧长按 2×、左侧长按预览后退并在松手定位、横向拖动及进度条均只在松手提交一次。全屏只绑定按钮。不能读取内部缓存、解码状态或准确的暂停确认，不能接管其画面增强、画质列表、下载与投屏，也不能保证第三方播放器始终无站内广告。宿主不添加广告，保留自己的直接媒体播放功能。
+
+打开已知季数的剧集时，并行取得详情与分集元数据；公共详情/分集缓存五分钟，搜索缓存保持一分钟。没有缓存 iframe、解析令牌或真实视频，也没有把元数据提速当作首帧提速。定位期间保留目标位置，忽略旧进度；确认后按用户原先的播放/暂停状态恢复，20 秒未确认显示切线提示。
 
 另查阅 [VidLink](https://vidlink.pro/) 与 [VidFast](https://vidfast.vc/) 的公开 iframe 文档、[非凡帮助中心](https://ffzy5.tv/help/)。文档可用不等于正片可播；未经实际播放验证的独立接口不进入本轮默认来源。
 
-本地复现：`npm test`、`npm run build`、`npm run test:mobile-player`。手机正式包需进一步在真实设备检查搜索、iframe 出画、换线、横屏和退出。个人播放截图和请求明细仅保留在忽略的 `reports/evidence/`。
+本地复现：`npm test`、`npm run build`、`npm run test:mobile-player`、`npm run test:embed-controls`。最后一项使用本地 SDK 合约夹具，不是实际片源性能测试。个人播放截图和请求明细仅保留在忽略的 `reports/evidence/`。

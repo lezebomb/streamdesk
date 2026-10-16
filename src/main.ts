@@ -1,3 +1,4 @@
+import {bindEmbedControls} from "./embed-controls";
 import {EmbedPlayer} from "./embed-player";
 import {relevance} from '../shared/search-relevance';
 import {validYear} from '../shared/metadata';
@@ -103,8 +104,8 @@ function renderEpisodes(){if(!current)return;const eps=activeEpisodes();$('#epis
 function finishAttempt(ok:boolean){if(!current||!episode||attemptLogged||episode.kind==='embed')return;const m=player.snapshot();if(m.firstFrameMs===null&&ok)return;attemptLogged=true;const bandwidth=m.fragments.length?m.fragments.reduce((s,f)=>s+f.bytes,0)*8/m.fragments.reduce((s,f)=>s+f.ms,0)/1000:undefined;const observation={kind:'play' as const,ok,ms:m.firstFrameMs??undefined,mbps:bandwidth,stallMs:m.stallMs,watchMs:m.watchMs,height:player.qualityState().height};const activeCandidate=candidates.find(c=>c.episode.url===episode!.url);if(ok&&m.watchMs>=10000&&activeCandidate)activeCandidate.decodedHeight=player.qualityState().height;updateHealth(current.sourceId,observation);updateHealth(mediaHealthKey(current,episode),observation)}
 async function playEpisode(e:Episode,position=0){if(!current)return;finishAttempt(true);episode=e;attemptLogged=false;attempted.add(e.url);$('#film-title').textContent=current.title;$<HTMLSelectElement>('#speed').value='1';player.video.playbackRate=1;renderEpisodes();$('#video').hidden=e.kind==='embed';$('#embed').hidden=e.kind!=='embed';$('#embed').removeAttribute('src');
  $('#quality').innerHTML='<option value="-1">自动</option>';qualitySignature='';for(const q of ['#quality','#speed'])$(q).closest('label')!.hidden=e.kind==='embed';$('#download-video').hidden=e.kind==='embed';$('.picture-options').hidden=e.kind==='embed';
- if(e.kind==='embed'){player.stop();$('#actual-quality').textContent='画质、字幕和倍速请在播放器内选择';embedPlayer.load(e,position);}
- else {embedPlayer.stop();player.contentAnime=current.category==='动漫';await player.load(e,position,true,switches,store.health[mediaHealthKey(current,e)]?.mbps??undefined);}
+ if(e.kind==='embed'){player.stop();$('#actual-quality').textContent='画质、字幕请在来源播放器内选择';embedPlayer.load(e,position);$('#actual-quality').hidden=embedPlayer.controlled;}
+ else {embedPlayer.stop();$('#actual-quality').hidden=false;player.contentAnime=current.category==='动漫';await player.load(e,position,true,switches,store.health[mediaHealthKey(current,e)]?.mbps??undefined);}
 }
 let qualitySignature='';
 const player=new Player($('#video'),s=>$('#play-status').textContent=s,reason=>void failover(reason),m=>{
@@ -168,6 +169,7 @@ async function probeLines(signal:AbortSignal,epoch:number){
  try{await work}finally{if(probing===work)probing=null}
 }
 bindVideoFullscreen($('.video-wrap'),toast);
+bindEmbedControls($('.video-wrap'),embedPlayer);
 bindVideoGestures($('.video-wrap'),$<HTMLVideoElement>('#video'),$('#gesture-hint'));
 bindVideoKeyboard(player.video,()=>!$('#watch').hidden&&episode?.kind!=='embed',holding=>{$('#gesture-hint').hidden=!holding;$('#gesture-hint').textContent=holding?'2× 倍速播放':''});
 bindCasting(()=>({film:current,episode,position:player.resumePosition()}),()=>player.video.pause(),toast);
