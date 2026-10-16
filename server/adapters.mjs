@@ -8,6 +8,7 @@ import { catalog } from './catalog.mjs';
 import {searchSources} from '../shared/source-search.ts';
 import {networkSlot} from './network-pool.mjs';
 import {runtimeConfig} from './runtime-config.mjs';
+import {createFrameXAdapter,frameXApi,frameXRequestUrl} from '../shared/framextv.ts';
 const configuredSourceFile=runtimeConfig.sourceRequired,sourceFile=runtimeConfig.sourceFile;
 export async function readSources(){
  if(configuredSourceFile)return validateSources(JSON.parse(await fs.readFile(sourceFile,'utf8')));
@@ -19,7 +20,8 @@ export async function readSources(){
 export function validateSources(sources){
  if(!Array.isArray(sources)||sources.length>20)throw new Error('最多配置 20 个来源');
  const ids=new Set();return sources.map(s=>{
-  if(!s||!/^[a-z0-9_-]{1,40}$/i.test(s.id)||ids.has(s.id)||typeof s.name!=='string'||s.name.length>100||!['catalog','applecms','embed'].includes(s.type))throw new Error('来源配置无效或 ID 重复');ids.add(s.id);
+  if(!s||!/^[a-z0-9_-]{1,40}$/i.test(s.id)||ids.has(s.id)||typeof s.name!=='string'||s.name.length>100||!['catalog','applecms','embed','framextv'].includes(s.type))throw new Error('来源配置无效或 ID 重复');ids.add(s.id);
+  if(s.type==='framextv'&&s.api!==frameXApi)throw Error('FrameXTV 元数据地址无效');
   if(s.priority!==undefined&&(!Number.isFinite(s.priority)||s.priority< -10||s.priority>10))throw new Error('来源优先级必须在 -10 到 10 之间');
   if(s.type==='catalog'&&!['hls','mp4','backup','blender','quality'].includes(s.catalog))throw new Error('不支持的公开目录');
   if(s.type==='applecms'){const u=new URL(s.api);if(!['https:','http:'].includes(u.protocol)||u.username||u.password)throw new Error('API 必须是公开 HTTP(S) 地址');}
@@ -35,11 +37,14 @@ function blocked(ip){
 // Known public source domains support proxy benchmark IPv4 mappings; owner
 // overrides remain local. Unknown domains, other private IPs and redirects stay blocked.
 let dnsExceptions={proxyDnsHosts:[],virtualIpv6Prefix:''};try{dnsExceptions=JSON.parse(await fs.readFile(runtimeConfig.securityFile,'utf8'))}catch(e){if(e.code!=='ENOENT')throw e;try{dnsExceptions=JSON.parse(await fs.readFile(path.join(runtimeConfig.distRoot,'client-defaults/proxy-dns.json'),'utf8'))}catch(fallback){if(fallback.code!=='ENOENT')throw fallback}}
+// Upgrades may add a published public host while the owner's older network file
+// remains in place. Only the shipped exact-host benchmark mapping is additive.
+try{const published=JSON.parse(await fs.readFile(path.join(runtimeConfig.distRoot,'client-defaults/proxy-dns.json'),'utf8'));dnsExceptions.proxyDnsHosts=[...new Set([...(dnsExceptions.proxyDnsHosts||[]),...(published.proxyDnsHosts||[])])]}catch(e){if(e.code!=='ENOENT')throw e}
 function permittedVirtual(host,ip){return dnsExceptions.proxyDnsHosts?.includes(host)&&(/^(198\.1[89]\.)/.test(ip)||dnsExceptions.virtualIpv6Prefix&&ip.toLowerCase().startsWith(dnsExceptions.virtualIpv6Prefix.toLowerCase()));}
 export async function publicTarget(url){const u=new URL(url);if(!['https:','http:'].includes(u.protocol)||u.username||u.password)throw new Error('只接受公开 HTTP(S)');let timer;const answers=await Promise.race([dns.lookup(u.hostname.replace(/^\[|\]$/g,''),{all:true}),new Promise((_,reject)=>timer=setTimeout(()=>reject(new Error('DNS 超时')),3000))]).finally(()=>clearTimeout(timer));if(!answers.length||answers.some(a=>blocked(a.address)&&!permittedVirtual(u.hostname,a.address)))throw new Error('不允许请求内网或保留地址');return u;}
 // Only requests to administrator-configured API origins, no arbitrary proxy or rewritten headers.
 async function cmsFetch(source,params,signal){
- const u=await publicTarget(source.api);for(const [k,v]of Object.entries(params))u.searchParams.set(k,v);
+ const u=await publicTarget(source.type==='framextv'?frameXRequestUrl(source,params).href:source.api);if(source.type!=='framextv')for(const [k,v]of Object.entries(params))u.searchParams.set(k,v);
  const r=await fetch(u,{redirect:'error',signal:AbortSignal.any([signal,AbortSignal.timeout(8000)].filter(Boolean)),headers:{Accept:'application/json'}});
  if(!r.ok)throw new Error(`HTTP ${r.status}`);
  const chunks=[];let bytes=0;for await(const chunk of r.body){bytes+=chunk.byteLength;if(bytes>2*1024*1024)throw new Error('API 响应过大');chunks.push(Buffer.from(chunk))}
@@ -50,6 +55,7 @@ export function clearCache(){cmsCache.clear()}
 export const adapters=new Map([
  ['catalog',{search:async(s,q)=>catalog(s).filter(f=>!q||f.title.toLowerCase().includes(q.toLowerCase())),detail:async(s,id)=>catalog(s).find(f=>f.id===id)}],
  ['embed',{search:async(s,q)=>(s.items||[]).map(f=>({...f,sourceId:s.id})).filter(f=>!q||f.title.toLowerCase().includes(q.toLowerCase())),detail:async(s,id)=>{const f=s.items.find(f=>f.id===id);return f?{...f,sourceId:s.id}:undefined}}],
- ['applecms',createAppleCmsAdapter(cmsCache.fetch)]
+ ['applecms',createAppleCmsAdapter(cmsCache.fetch)],
+ ['framextv',createFrameXAdapter(cmsCache.fetch)]
 ]);
 export async function searchAll(sources,q,signal,onRow=()=>{}){return searchSources(sources,q,adapters,signal,onRow)}

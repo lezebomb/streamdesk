@@ -13,6 +13,10 @@ app.on('second-instance',async()=>{try{const installed=JSON.parse(await fs.readF
 app.whenReady().then(async()=>{
  const assets=app.getAppPath(),data=path.join(app.getPath('userData'),'data');await fs.mkdir(data,{recursive:true});
  for(const [name,defaultFile,empty]of [['sources.json',path.join(assets,'data/sources.example.json'),'[]'],['cloud.json',path.join(assets,'public/client-defaults/cloud.json'),'{}']]){try{const saved=await fs.readFile(path.join(data,name),'utf8');if(saved.trim()===empty)await fs.copyFile(defaultFile,path.join(data,name))}catch(error){if(error.code!=='ENOENT')throw error;await fs.copyFile(defaultFile,path.join(data,name),require('node:fs').constants.COPYFILE_EXCL)}}
+ // Add published sources on upgrades while retaining owner overrides and disabled sources.
+ const savedSources=JSON.parse(await fs.readFile(path.join(data,'sources.json'),'utf8')),defaultSources=JSON.parse(await fs.readFile(path.join(assets,'data/sources.example.json'),'utf8'));let addedSources=false;
+ for(const source of defaultSources)if(savedSources.length<20&&!savedSources.some(s=>s.id===source.id)){savedSources.push(source);addedSources=true}
+ if(addedSources){const temp=path.join(data,'sources-upgrade.tmp');await fs.writeFile(temp,JSON.stringify(savedSources,null,2));await fs.rename(temp,path.join(data,'sources.json'))}
  let base;let recovering=false,lastRecovery=0;
  const startBackend=async()=>{if(closing)throw Error('应用正在关闭');const port=await freePort();base='http://127.0.0.1:'+port;
  const env={...process.env,PORT:String(port),HOST:'127.0.0.1',STREAMDESK_DATA:data,STREAMDESK_DIST:path.join(assets,'dist')};for(const key of ['STREAMDESK_SOURCES','STREAMDESK_RESULT_CACHE','STREAMDESK_SECURITY'])delete env[key];

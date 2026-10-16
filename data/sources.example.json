@@ -1,5 +1,12 @@
 [
   {
+    "id": "framextv",
+    "name": "FrameXTV",
+    "type": "framextv",
+    "enabled": true,
+    "api": "https://api.framextv.tech/api/search"
+  },
+  {
     "id": "baofeng",
     "name": "暴风",
     "type": "applecms",

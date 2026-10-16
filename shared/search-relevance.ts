@@ -9,13 +9,14 @@ export function seasonQuery(q:string):{base:string;season:number}|undefined{
 const aliases=['我们怎么可能成为恋人不行不行','我怎么可能成为你的恋人不行不行','我们不可能成为恋人','我怎么能成为你的恋人不行不行'];
 export function searchTerms(q:string):string[]{
  if(aliases.some(x=>normalizedTitle(x)===normalizedTitle(q)))return ['我们不可能成为恋人'];
- const s=seasonQuery(q);if(!s)return [q];
+ const s=seasonQuery(q);if(!s){const compact=q.replace(/[\s\p{P}\p{S}]/gu,'');return [...new Set([q,compact,...(/^[\p{Script=Han}]{6,}$/u.test(compact)?[compact.slice(0,4)]:[])])].slice(0,3)}
  // Three actual public API queries at most. No fuzzy season rewrite in identity rules.
  return [...new Set([`${s.base}第${chinese(s.season)}季`,s.base,q])].slice(0,3);
 }
-export function relevance(f:Pick<Film,'title'|'season'|'category'>,query:string):number{
+export function relevance(f:Pick<Film,'title'|'season'|'category'|'matchedQuery'>,query:string):number{
  const terms=searchTerms(query),q=normalizedTitle(query),name=normalizedTitle(f.title),desired=seasonQuery(query),actual=seasonQuery(f.title);
  if(name===q)return 1200;
+ if(f.matchedQuery&&normalizedTitle(f.matchedQuery)===q)return desired&&desired.season===f.season?1125:600;
  if(desired){const base=normalizedTitle(desired.base),filmBase=normalizedTitle(actual?.base||f.title),season=f.season??actual?.season;if(filmBase===base&&season===desired.season)return 1150;if(filmBase===base)return season===undefined?500:300-Math.abs(season-desired.season);if(!filmBase.includes(base))return 0;return season===desired.season?850:150}
  const matched=terms.map(normalizedTitle).find(t=>name===t||name.includes(t));if(!matched)return 0;return name===matched?1100:700-Math.min(150,name.length-matched.length);
 }

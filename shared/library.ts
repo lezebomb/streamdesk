@@ -19,7 +19,7 @@ export function resumeEpisode(history:History,film:Film):Episode|undefined {
  const exact=all.find(e=>e.key===history.episodeKey);if(exact)return exact;
  const legacy=history.episodeKey.match(/^episode:(\d+)$/);return legacy?all.find(e=>e.number===Number(legacy[1])&&e.season===season&&!e.part):undefined;
 }
-export function persistedFilm(film:Film,selected?:Episode):Film {const {groups:_groups,episodes:_episodes,...metadata}=film;return {...metadata,episodes:selected?[selected]:[]}}
+export function persistedFilm(film:Film,selected?:Episode):Film {const {groups:_groups,episodes:_episodes,matchedQuery:_query,...metadata}=film;return {...metadata,episodes:selected?[selected]:[]}}
 export function librarySnapshot(favorites:Film[],history:History[]):LibrarySnapshot {return {app:'StreamDesk',schema:1,exportedAt:new Date().toISOString(),favorites:favorites.map(f=>persistedFilm(f)),history:history.map(h=>({...h,film:persistedFilm(h.film,playbackGroups(h.film).flatMap(g=>g.episodes).find(e=>e.key===h.episodeKey))}))}}
 export function parseLibrary(raw:unknown):LibrarySnapshot {
  if(!raw||typeof raw!=='object')throw new Error('备份格式错误');const data=raw as Partial<LibrarySnapshot>;

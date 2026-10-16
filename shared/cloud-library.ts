@@ -1,7 +1,7 @@
 import type {Film} from './model';
 import {filmIdentity,parseLibrary,type LibrarySnapshot} from './library.ts';
 export interface CloudEntry {kind:'favorite'|'history';item_key:string;film:Film;episode_key?:string;position:number;updated_at:number;deleted:boolean}
-export function cloudFilm(f:Film):Film {const {groups,episodes,description,...metadata}=f;return {...metadata,episodes:[]}}
+export function cloudFilm(f:Film):Film {const {groups,episodes,description,matchedQuery,...metadata}=f;return {...metadata,episodes:[]}}
 export function reconcileLibrary(previous:CloudEntry[],snapshot:LibrarySnapshot,now=Date.now()):CloudEntry[]{
  const entries=new Map(previous.map(e=>[e.kind+':'+e.item_key,e]));
  const items=[...snapshot.favorites.map(f=>({kind:'favorite' as const,film:f,position:0,at:now,episode_key:undefined})),...snapshot.history.map(h=>({kind:'history' as const,film:h.film,position:h.position,at:h.at,episode_key:h.episodeKey}))];
