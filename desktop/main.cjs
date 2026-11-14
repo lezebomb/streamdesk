@@ -2,6 +2,7 @@ const {app,BrowserWindow,protocol,net,utilityProcess,ipcMain,dialog,session}=req
 const fs=require('node:fs/promises'),path=require('node:path'),http=require('node:net');const {autoUpdater}=require('electron-updater');
 const {checkService,recordServiceEvent}=require('./service-health.cjs');
 protocol.registerSchemesAsPrivileged([{scheme:'app',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true,stream:true}}]);
+app.commandLine.appendSwitch('disable-features','PrivateNetworkAccessRestrictions,PrivateNetworkAccessReservations,PrivateNetworkAccessReservePrivateIp,LocalNetworkAccess');
 app.setAppUserModelId('com.lezebomb.streamdesk');if(process.env.STREAMDESK_TEST_HOME)app.setPath('userData',path.resolve(process.env.STREAMDESK_TEST_HOME));
 const single=app.requestSingleInstanceLock();if(!single){app.quit();return;}
 let window,backend,healthTimer,closing=false;let updateState={state:'idle',version:app.getVersion()};
@@ -28,7 +29,9 @@ app.whenReady().then(async()=>{
  protocol.handle('app',async request=>{try{const u=new URL(request.url);if(u.hostname!=='streamdesk')return new Response('',{status:403});const headers={};if(request.headers.get('content-type'))headers['Content-Type']=request.headers.get('content-type');let body;if(!['GET','HEAD'].includes(request.method)){body=await request.arrayBuffer();if(body.byteLength>512*1024)return new Response('',{status:413})}return await net.fetch(base+u.pathname+u.search,{method:request.method,headers,body,redirect:'error'})}catch{return new Response('本地服务暂时不可用',{status:503})}});
  window=new BrowserWindow({show:!process.env.STREAMDESK_TEST_HOME,width:1320,height:880,minWidth:800,minHeight:600,title:'StreamDesk',icon:path.join(assets,'public/icon-512.png'),webPreferences:{preload:path.join(assets,'desktop/preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true}});
  window.removeMenu();window.webContents.setWindowOpenHandler(()=>({action:'deny'}));window.webContents.on('will-navigate',(event,url)=>{if(!url.startsWith('app://streamdesk/'))event.preventDefault()});
- session.defaultSession.setPermissionRequestHandler((contents,permission,callback)=>callback(contents===window?.webContents&&['fullscreen','wakeLock'].includes(permission)));
+ const localNetworkPermissions=['fullscreen','wakeLock','local-network','local-network-access','loopback-network'];
+ session.defaultSession.setPermissionRequestHandler((contents,permission,callback)=>callback(contents===window?.webContents&&localNetworkPermissions.includes(permission)));
+ session.defaultSession.setPermissionCheckHandler((contents,permission,origin)=>!!contents&&contents===window?.webContents&&(localNetworkPermissions.includes(permission)||origin==='app://streamdesk'));
  ipcMain.handle('sd:update',async(event,action)=>{if(!permitted(event))throw Error('不允许的调用');if(action==='state')return updateState;if(action==='check')return check();if(action==='download'&&updateState.state==='available'){emit({state:'downloading'});try{await autoUpdater.downloadUpdate()}catch{emit({state:'available',message:'下载失败，已安装版本和记录保留'})}return updateState}if(action==='install'&&updateState.state==='ready'){autoUpdater.quitAndInstall(false,true);return updateState}throw Error('更新操作无效')});
  autoUpdater.autoDownload=false;autoUpdater.autoInstallOnAppQuit=false;autoUpdater.allowDowngrade=false;autoUpdater.allowPrerelease=false;autoUpdater.requestTimeout=10000;
  autoUpdater.setFeedURL({provider:'github',owner:'lezebomb',repo:'streamdesk',private:false});
