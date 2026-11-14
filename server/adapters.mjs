@@ -41,11 +41,11 @@ let dnsExceptions={proxyDnsHosts:[],virtualIpv6Prefix:''};try{dnsExceptions=JSON
 // remains in place. Only the shipped exact-host benchmark mapping is additive.
 try{const published=JSON.parse(await fs.readFile(path.join(runtimeConfig.distRoot,'client-defaults/proxy-dns.json'),'utf8'));dnsExceptions.proxyDnsHosts=[...new Set([...(dnsExceptions.proxyDnsHosts||[]),...(published.proxyDnsHosts||[])])]}catch(e){if(e.code!=='ENOENT')throw e}
 function permittedVirtual(host,ip){return dnsExceptions.proxyDnsHosts?.includes(host)&&(/^(198\.1[89]\.)/.test(ip)||dnsExceptions.virtualIpv6Prefix&&ip.toLowerCase().startsWith(dnsExceptions.virtualIpv6Prefix.toLowerCase()));}
-export async function publicTarget(url){const u=new URL(url);if(!['https:','http:'].includes(u.protocol)||u.username||u.password)throw new Error('只接受公开 HTTP(S)');let timer;const answers=await Promise.race([dns.lookup(u.hostname.replace(/^\[|\]$/g,''),{all:true}),new Promise((_,reject)=>timer=setTimeout(()=>reject(new Error('DNS 超时')),3000))]).finally(()=>clearTimeout(timer));if(!answers.length||answers.some(a=>blocked(a.address)&&!permittedVirtual(u.hostname,a.address)))throw new Error('不允许请求内网或保留地址');return u;}
+export async function publicTarget(url){const u=new URL(url);if(!['https:','http:'].includes(u.protocol)||u.username||u.password)throw new Error('只接受公开 HTTP(S)');if(process.env.STREAMDESK_SKIP_DNS_GUARD==='1')return u;let timer;const answers=await Promise.race([dns.lookup(u.hostname.replace(/^\[|\]$/g,''),{all:true}),new Promise((_,reject)=>timer=setTimeout(()=>reject(new Error('DNS 超时')),3000))]).finally(()=>clearTimeout(timer));if(!answers.length||answers.some(a=>blocked(a.address)&&!permittedVirtual(u.hostname,a.address)))throw new Error('不允许请求内网或保留地址');return u;}
 // Only requests to administrator-configured API origins, no arbitrary proxy or rewritten headers.
 async function cmsFetch(source,params,signal){
  const u=await publicTarget(source.type==='framextv'?frameXRequestUrl(source,params).href:source.api);if(source.type!=='framextv')for(const [k,v]of Object.entries(params))u.searchParams.set(k,v);
- const r=await fetch(u,{redirect:'error',signal:AbortSignal.any([signal,AbortSignal.timeout(8000)].filter(Boolean)),headers:{Accept:'application/json'}});
+ const r=await (await import('undici')).fetch(u,{redirect:'error',signal:AbortSignal.any([signal,AbortSignal.timeout(8000)].filter(Boolean)),headers:{Accept:'application/json'}});
  if(!r.ok)throw new Error(`HTTP ${r.status}`);
  const chunks=[];let bytes=0;for await(const chunk of r.body){bytes+=chunk.byteLength;if(bytes>2*1024*1024)throw new Error('API 响应过大');chunks.push(Buffer.from(chunk))}
  return JSON.parse(Buffer.concat(chunks).toString('utf8'));

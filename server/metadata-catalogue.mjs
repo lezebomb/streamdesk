@@ -23,5 +23,5 @@ export function metadataCatalogue(file,{transport=publicHTML,now=Date.now}={}){
 async function publicHTML(url){
  const u=new URL(url);if(u.origin!=='https://movie.douban.com'||!/^\/(?:top250|chart|subject\/\d+\/)\/?$/.test(u.pathname))throw Error('目录地址不允许');
  const signal=AbortSignal.timeout(9000);
- return networkSlot(async()=>{const r=await fetch(u,{redirect:'error',signal,headers:{Accept:'text/html'}});if(!r.ok)throw Error('目录 HTTP '+r.status);let data='',bytes=0;const decoder=new TextDecoder();for await(const b of r.body){bytes+=b.length;if(bytes>2*1024*1024)throw Error('目录响应过大');data+=decoder.decode(b,{stream:true})}return data+decoder.decode()},signal,{background:true});
+ return networkSlot(async()=>{const r=await (await import('undici')).fetch(u,{redirect:'error',signal,headers:{Accept:'text/html'}});if(!r.ok)throw Error('目录 HTTP '+r.status);let data='',bytes=0;const decoder=new TextDecoder();for await(const b of r.body){bytes+=b.length;if(bytes>2*1024*1024)throw Error('目录响应过大');data+=decoder.decode(b,{stream:true})}return data+decoder.decode()},signal,{background:true});
 }
